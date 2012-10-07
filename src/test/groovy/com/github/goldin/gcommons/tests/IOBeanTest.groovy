@@ -25,12 +25,6 @@ class IOBeanTest extends BaseTest
             assert   resource( '/testResource.txt' )
             assert   resource( '/testResource.txt' ).openStream()
             assert   resource( '/testResource.txt' ).openStream().available()
-            assert   resource( 'gradle-0.9.tar.gz' )
-            assert   resource( 'gradle-0.9.tar.gz' ).openStream()
-            assert   resource( 'gradle-0.9.tar.gz' ).openStream().available()
-            assert   resource( '/gradle-0.9.tar.gz' )
-            assert   resource( '/gradle-0.9.tar.gz' ).openStream()
-            assert   resource( '/gradle-0.9.tar.gz' ).openStream().available()
 
             shouldFailAssert { resource( 'emptyTestResourceAAA.txt' ) }
             shouldFailAssert { resource( 'testResourceAAA.txt' ) }
