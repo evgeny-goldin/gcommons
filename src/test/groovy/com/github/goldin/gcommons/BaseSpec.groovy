@@ -55,18 +55,19 @@ class BaseSpec extends Specification
      */
     protected final File testResource( String path )
     {
-        final File file = [ 'src/test/resources', 'build/testArchives' ].collect{ new File( it, path )}.find { it.file }
+        def file = new File( 'src/test/resources', path )
+        if ( file.file ) { return file }
 
-        if ( ! file )
-        {
-            final alternativeFile = verifyBean.file( new File( 'build/testArchives', "${ fileBean.baseName( file ) }.zip" ))
-            final tempDir         = fileBean.tempDirectory()
+        file = new File( 'build/testArchives', path )
+        if ( file.file ) { return file }
 
-            fileBean.with {
-                unpack( alternativeFile, tempDir )
-                pack  ( tempDir, file )
-                delete( tempDir )
-            }
+        final alternativeFile = verifyBean.file( new File( 'build/testArchives', "${ fileBean.baseName( file ) }.zip" ))
+        final tempDir         = fileBean.tempDirectory()
+
+        fileBean.with {
+            unpack( alternativeFile, tempDir )
+            pack  ( tempDir, file )
+            delete( tempDir )
         }
 
         verifyBean.file( file )
