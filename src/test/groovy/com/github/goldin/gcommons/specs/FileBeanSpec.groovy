@@ -432,17 +432,17 @@ class FileBeanSpec extends BaseSpec
         unpackZipEntries( zipFile, unpack8, [ '**/*.dll', 'no-such-file', '**/*.html' ], [ '**/docs/**' ], true, false )
 
         then:
-        96       == recurse( unpack1, [ type: FileType.FILES ], { File f -> assert   f.name.endsWith( '.jar' )}).size()
-        510      == recurse( unpack2, [ type: FileType.FILES ], { File f -> assert ! [ 'html', 'groovy', 'java' ].any { f.name.endsWith( ".$it" ) }}).size()
-        108      == recurse( unpack3, [ type: FileType.FILES ], { File f -> assert ! [ 'd', 'e' ].any { f.name.contains( it ) }}).size()
+        108      == recurse( unpack1, [ type: FileType.FILES ], { File f -> assert   f.name.endsWith( '.jar' )}).size()
+        522      == recurse( unpack2, [ type: FileType.FILES ], { File f -> assert ! [ 'html', 'groovy', 'java' ].any { f.name.endsWith( ".$it" ) }}).size()
+        149      == recurse( unpack3, [ type: FileType.FILES ], { File f -> assert ! [ 'd', 'e' ].any { f.name.contains( it ) }}).size()
         7        == recurse( unpack4, [ type: FileType.FILES ], { File f -> assert f.name.endsWith( '.html'   ) && ( ! f.path.contains ( 'docs'     )) }).size()
         32       == recurse( unpack5, [ type: FileType.FILES ], { File f -> assert f.name.endsWith( '.groovy' ) && ( ! f.path.contains ( 'internal' )) }).size()
         29       == recurse( unpack6, [ type: FileType.FILES ], { File f -> assert [ 'gradle', 'html', 'png', 'properties', 'txt', 'xml' ].any{ f.name.endsWith( ".$it" ) }}).size()
         4        == recurse( unpack7, [ type: FileType.FILES ], { File f -> assert [ 'gradle', 'html', 'properties' ].any{ f.name.endsWith( ".$it" ) }}).size()
 
-        9435052  == directorySize( unpack1 )
-        11185949 == directorySize( unpack2 )
-        3578296  == directorySize( unpack3 )
+        33788294 == directorySize( unpack1 )
+        35539173 == directorySize( unpack2 )
+        17339526 == directorySize( unpack3 )
         33352    == directorySize( unpack4 )
         88130    == directorySize( unpack5 )
         43630    == directorySize( unpack6 )
