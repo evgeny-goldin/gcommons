@@ -1,0 +1,145 @@
+
+apply plugin: 'groovy'
+apply plugin: 'maven'
+apply plugin: 'idea'
+apply plugin: 'about'
+apply plugin: 'duplicates'
+apply from:   'file:groovydoc.gradle'
+
+
+ext.codenarcRuleSetFiles = [ 'codenarc.groovy' ]
+apply from: 'https://raw.github.com/evgeny-goldin/gradle-plugins/master/codenarc/CodeNarc.gradle'
+
+
+defaultTasks 'duplicates', 'clean', 'codenarc', 'build', 'groovydoc', 'about', 'install'
+
+
+sourceCompatibility          = 1.6
+group                        = 'com.github.goldin'
+final groovyVersion          = '1.8.8'
+final spockVersion           = '0.6-groovy-1.8'
+final spockExtensionsVersion = '0.1.4'
+final gcontractsVersion      = '1.2.5'
+final antVersion             = '1.8.4'
+final springVersion          = '3.1.2.RELEASE'
+final truezipVersion         = '6.8.2'
+final slf4jVersion           = '1.7.1'
+final junitVersion           = '4.10'
+
+
+buildscript {
+    repositories { mavenRepo url: 'http://evgenyg.artifactoryonline.com/evgenyg/repo/' }
+    dependencies { classpath      'com.github.goldin.plugins.gradle:about:0.2-SNAPSHOT',
+                                  'com.github.goldin.plugins.gradle:duplicates:0.2-SNAPSHOT' }
+}
+
+
+repositories { mavenRepo url: 'http://evgenyg.artifactoryonline.com/evgenyg/repo/' }
+about        { dumpDependencies = true }
+duplicates   { configurations   = [ 'runtime' ]
+               verbose          = true }
+
+configurations {
+    testArchives
+}
+
+dependencies {
+    groovy      "org.codehaus.groovy:groovy-all:$groovyVersion"
+
+    compile     "org.codehaus.groovy:groovy-all:$groovyVersion",
+                "org.gcontracts:gcontracts-core:$gcontractsVersion",
+                "de.schlichtherle:truezip:$truezipVersion",
+                "org.slf4j:slf4j-api:$slf4jVersion",
+                'org.apache.commons:commons-exec:1.1',
+                'commons-net:commons-net:3.1'
+
+    testArchives 'viral.protein:faa:1@gz',
+                 'apache-maven:apache-maven:3.0.1@zip',
+                 'gradle:gradle:0.9@zip',
+                 'org.codehaus.plexus:plexus-component-annotations:1.5.5'
+
+    compile ( 'com.google.inject:guice:3.0' ) {
+        exclude group: 'asm' // Brought by gcontracts
+    }
+
+    compile ( "org.apache.ant:ant:$antVersion" ) {
+        exclude group: 'org.apache.ant'
+    }
+
+    compile ( "org.springframework:spring-core:$springVersion" ) {
+        exclude group: 'org.springframework'
+        exclude group: 'commons-logging'
+    }
+
+    runtime     "org.apache.ant:ant-commons-net:$antVersion",
+                "org.slf4j:slf4j-log4j12:$slf4jVersion"
+
+    testCompile "junit:junit:$junitVersion"
+
+    testCompile ( "com.github.goldin:spock-extensions:$spockExtensionsVersion" ){
+       exclude group: 'org.codehaus.groovy'
+       exclude group: 'org.spockframework'
+    }
+
+    testCompile ( "org.spockframework:spock-core:$spockVersion" ) {
+        exclude group: 'org.codehaus.groovy'
+        exclude group: 'junit'
+    }
+
+    testRuntime 'log4j:log4j:1.2.17'
+}
+
+
+clean { delete( "$rootDir/out" ) }
+
+
+idea.project {
+    jdkName = '1.7'
+    ipr.withXml { provider -> provider.node.component.find { it.@name == 'VcsDirectoryMappings' }.mapping.@vcs = 'Git' }
+}
+
+idea.module {
+    downloadSources = true
+    downloadJavadoc = false
+    iml.withXml {
+        provider ->
+        provider.node.component.content.first().with {
+            appendNode( 'excludeFolder', [ url : 'file://$MODULE_DIR$/gradle' ])
+            appendNode( 'excludeFolder', [ url : 'file://$MODULE_DIR$/out'    ])
+        }
+        provider.node.component.first().appendNode( 'orderEntry', [ type : 'library', name : 'Groovy', level: 'application' ])
+    }
+}
+
+
+task wrapper( type: Wrapper ) { gradleVersion = '1.2' }
+
+
+task downloadTestArchives( type: Copy ) {
+    from configurations.testArchives
+    into file( "$buildDir/testArchives" )
+}
+
+
+test {
+    dependsOn downloadTestArchives
+    systemProperties = ( 'true' == System.properties.slowTests ) ? [ slowTests : 'true' ] : [:]
+    debug            = System.properties.containsKey( 'debug' )
+    ignoreFailures   = true
+}
+
+
+task sourcesJar( type: Jar, dependsOn: classes ) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task groovydocJar( type: Jar, dependsOn: groovydoc ) {
+     classifier = 'javadoc'
+     from groovydoc.destinationDir
+}
+
+artifacts {
+     archives sourcesJar
+     archives groovydocJar
+}

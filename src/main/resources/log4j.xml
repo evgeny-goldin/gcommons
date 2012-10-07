@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false" threshold="all">
+
+    <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
+        <errorHandler class="org.apache.log4j.helpers.OnlyOnceErrorHandler"/>
+        <param name="Target" value="System.out"/>
+        <layout class="org.apache.log4j.EnhancedPatternLayout">
+            <param name="ConversionPattern" value="%d{ISO8601}{GMT} %-5p  [%c:%M(%L)] - %m %n"/>
+        </layout>
+    </appender>
+
+    <category name="org.springframework" additivity="false">
+        <priority value="INFO"/>
+        <appender-ref ref="CONSOLE"/>
+    </category>
+
+    <category name="com.github.goldin" additivity="false">
+        <priority value="INFO"/>
+        <appender-ref ref="CONSOLE"/>
+    </category>
+
+    <root>
+        <priority value="WARN"/>
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+</log4j:configuration>
