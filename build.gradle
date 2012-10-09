@@ -19,7 +19,7 @@ group                        = 'com.github.goldin'
 final groovyVersion          = '1.8.8'
 final spockVersion           = '0.7-groovy-1.8'
 final spockExtensionsVersion = '0.1.4'
-final gcontractsVersion      = '1.2.5'
+final gcontractsVersion      = '1.2.10'
 final antVersion             = '1.8.4'
 final springVersion          = '3.1.2.RELEASE'
 final truezipVersion         = '6.8.2'
@@ -34,7 +34,8 @@ buildscript {
 }
 
 
-repositories { mavenRepo url: 'http://evgenyg.artifactoryonline.com/evgenyg/repo/' }
+repositories { mavenRepo url: 'http://evgenyg.artifactoryonline.com/evgenyg/repo/'
+               mavenRepo url: 'https://oss.sonatype.org/content/repositories/orggcontracts-501/' }
 about        { dumpDependencies = true }
 duplicates   { configurations   = [ 'runtime' ]
                verbose          = true }

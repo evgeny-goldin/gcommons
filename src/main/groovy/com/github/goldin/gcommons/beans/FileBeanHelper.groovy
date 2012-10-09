@@ -21,11 +21,11 @@ final class FileBeanHelper
     private final FileBean   fileBean
     private final AntBuilder ant
 
-    @Requires({ fileBean && ant })
-    protected FileBeanHelper( FileBean fileBean, AntBuilder ant )
+    @Requires({ fb && antBuilder })
+    protected FileBeanHelper( FileBean fb, AntBuilder antBuilder )
     {
-        this.fileBean = fileBean
-        this.ant      = ant
+        this.fileBean = fb
+        this.ant      = antBuilder
     }
 
     /**
