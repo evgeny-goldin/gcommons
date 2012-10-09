@@ -21,12 +21,14 @@ final class FileBeanHelper
     private final FileBean   fileBean
     private final AntBuilder ant
 
-    @Requires({ fb && antBuilder })
-    protected FileBeanHelper( FileBean fb, AntBuilder antBuilder )
+
+    @Requires({ fileBean && ant })
+    protected FileBeanHelper( FileBean fileBean, AntBuilder ant )
     {
-        this.fileBean = fb
-        this.ant      = antBuilder
+        this.fileBean = fileBean
+        this.ant      = ant
     }
+
 
     /**
      * Retrieves packing tool name: Ant or TrueZip

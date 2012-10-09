@@ -35,7 +35,7 @@ buildscript {
 
 
 repositories { mavenRepo url: 'http://evgenyg.artifactoryonline.com/evgenyg/repo/'
-               mavenRepo url: 'https://oss.sonatype.org/content/repositories/orggcontracts-501/' }
+               mavenRepo url: 'https://oss.sonatype.org/content/repositories/orggcontracts-529/' }
 about        { dumpDependencies = true }
 duplicates   { configurations   = [ 'runtime' ]
                verbose          = true }
