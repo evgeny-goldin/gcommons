@@ -28,7 +28,8 @@ final junitVersion           = '4.10'
 
 
 buildscript {
-    repositories { mavenRepo url: 'http://evgenyg.artifactoryonline.com/evgenyg/repo/' }
+    repositories { mavenRepo url: 'http://evgenyg.artifactoryonline.com/evgenyg/repo/'
+                   mavenRepo url: 'https://oss.sonatype.org/content/repositories/orggcontracts-025/' }
     dependencies { classpath      'com.github.goldin.plugins.gradle:about:0.2-SNAPSHOT',
                                   'com.github.goldin.plugins.gradle:duplicates:0.2-SNAPSHOT' }
 }
