@@ -35,7 +35,7 @@ buildscript {
 
 
 repositories { mavenRepo url: 'http://evgenyg.artifactoryonline.com/evgenyg/repo/' }
-about        { dumpDependencies = true }
+about        { includeDependencies = [ 'compile', 'runtime' ] }
 duplicates   { configurations   = [ 'runtime' ]
                verbose          = true }
 
