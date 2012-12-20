@@ -11,20 +11,22 @@ ext.codenarcRuleSetFiles = [ 'codenarc.groovy' ]
 apply from: 'https://raw.github.com/evgeny-goldin/gradle-plugins/master/codenarc/CodeNarc.gradle'
 
 
-defaultTasks 'duplicates', 'clean', 'codenarc', 'build', 'groovydoc', 'about', 'install'
+defaultTasks 'duplicates', 'clean', 'codenarc', 'build', 'groovydoc', 'install'
 
 
 sourceCompatibility          = 1.6
 group                        = 'com.github.goldin'
-final groovyVersion          = '1.8.8'
-final spockVersion           = '0.7-groovy-1.8'
-final spockExtensionsVersion = '0.1.4'
-final gcontractsVersion      = '1.2.10'
-final antVersion             = '1.8.4'
-final springVersion          = '3.1.3.RELEASE'
-final truezipVersion         = '6.8.2'
-final slf4jVersion           = '1.7.1'
-final junitVersion           = '4.11'
+
+final groovyVersion          = '2.0.5'          // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.codehaus.groovy%22%20AND%20a%3A%22groovy%22
+final spockVersion           = '0.7-groovy-2.0' // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.spockframework%22%20AND%20a%3A%22spock-core%22
+final spockExtensionsVersion = '0.1.4'          // http://evgenyg.artifactoryonline.com/evgenyg/repo/com/github/goldin/spock-extensions/
+final gcontractsVersion      = '1.2.10'         // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.gcontracts%22%20AND%20a%3A%22gcontracts-core%22
+final antVersion             = '1.8.4'          // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.apache.ant%22%20AND%20a%3A%22ant%22
+final springVersion          = '3.2.0.RELEASE'  // http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.springframework%22%20AND%20a%3A%22spring-core%22
+final truezipVersion         = '6.8.4'          // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22de.schlichtherle%22%20AND%20a%3A%22truezip%22
+final slf4jVersion           = '1.7.2'          // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.slf4j%22%20AND%20a%3A%22slf4j-api%22
+final junitVersion           = '4.11'           // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22junit%22%20AND%20a%3A%22junit%22
+final guiceVersion           = '3.0'            // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.google.inject%22%20AND%20a%3A%22guice%22
 
 
 buildscript {
@@ -34,31 +36,33 @@ buildscript {
 }
 
 
-repositories { mavenRepo url: 'http://evgenyg.artifactoryonline.com/evgenyg/repo/' }
+repositories { maven { url 'http://evgenyg.artifactoryonline.com/evgenyg/repo/' }}
 about        { includeDependencies = [ 'compile', 'runtime' ] }
-duplicates   { configurations   = [ 'runtime' ]
-               verbose          = true }
+duplicates   { configurations      = [ 'runtime' ]
+               verbose             = true }
 
 configurations {
     testArchives
 }
 
 dependencies {
-    groovy      "org.codehaus.groovy:groovy-all:$groovyVersion"
+    groovy      "org.codehaus.groovy:groovy:$groovyVersion"
 
-    compile     "org.codehaus.groovy:groovy-all:$groovyVersion",
+    compile     "org.codehaus.groovy:groovy:$groovyVersion",
+                "org.codehaus.groovy:groovy-ant:$groovyVersion",
                 "org.gcontracts:gcontracts-core:$gcontractsVersion",
                 "de.schlichtherle:truezip:$truezipVersion",
                 "org.slf4j:slf4j-api:$slf4jVersion",
                 'org.apache.commons:commons-exec:1.1',
-                'commons-net:commons-net:3.1'
+                'commons-net:commons-net:3.2'
 
     testArchives 'viral.protein:faa:1@gz',
                  'apache-maven:apache-maven:3.0.1@zip',
                  'gradle:gradle:0.9@zip',
                  'org.codehaus.plexus:plexus-component-annotations:1.5.5'
 
-    compile ( 'com.google.inject:guice:3.0' ) {
+
+    compile ( "com.google.inject:guice:$guiceVersion" ) {
         exclude group: 'asm' // Brought by gcontracts
     }
 
@@ -74,7 +78,8 @@ dependencies {
     runtime     "org.apache.ant:ant-commons-net:$antVersion",
                 "org.slf4j:slf4j-log4j12:$slf4jVersion"
 
-    testCompile "junit:junit:$junitVersion"
+    testCompile "org.codehaus.groovy:groovy-test:$groovyVersion",
+                "junit:junit:$junitVersion"
 
     testCompile ( "com.github.goldin:spock-extensions:$spockExtensionsVersion" ){
        exclude group: 'org.codehaus.groovy'
@@ -86,6 +91,7 @@ dependencies {
         exclude group: 'junit'
     }
 
+    // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22log4j%22%20AND%20a%3A%22log4j%22
     testRuntime 'log4j:log4j:1.2.17'
 }
 
@@ -101,12 +107,11 @@ idea.project {
 idea.module {
     downloadSources = true
     downloadJavadoc = false
+
+    excludeDirs += file( 'out' )
+
     iml.withXml {
         provider ->
-        provider.node.component.content.first().with {
-            appendNode( 'excludeFolder', [ url : 'file://$MODULE_DIR$/gradle' ])
-            appendNode( 'excludeFolder', [ url : 'file://$MODULE_DIR$/out'    ])
-        }
         provider.node.component.first().appendNode( 'orderEntry', [ type : 'library', name : 'Groovy', level: 'application' ])
     }
 }
@@ -124,15 +129,18 @@ test {
     ignoreFailures   = true
 }
 
+jar.dependsOn 'about'
 
 task sourcesJar( type: Jar, dependsOn: classes ) {
+    dependsOn 'about'
     classifier = 'sources'
     from sourceSets.main.allSource
 }
 
 task groovydocJar( type: Jar, dependsOn: groovydoc ) {
-     classifier = 'javadoc'
-     from groovydoc.destinationDir
+    dependsOn 'about'
+    classifier = 'javadoc'
+    from groovydoc.destinationDir
 }
 
 artifacts {

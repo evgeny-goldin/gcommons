@@ -45,6 +45,7 @@ class LoggerOutputStream extends OutputStream implements Closeable
 
 
     @Override
+    @SuppressWarnings([ 'SpaceAroundOperator' ])
     void flush ()
     {
         if ( buffer.position() > 0 )

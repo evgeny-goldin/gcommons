@@ -5,6 +5,7 @@ ruleset {
 
     ruleset( 'http://codenarc.sourceforge.net/StarterRuleSet-AllRulesByCategory.groovy.txt' ) {
 
+        AbcMetric                ( enabled : false )
         DuplicateNumberLiteral   ( enabled : false )
         DuplicateStringLiteral   ( enabled : false )
         DuplicateListLiteral     ( enabled : false )
@@ -20,6 +21,11 @@ ruleset {
         ThrowRuntimeException    ( enabled : false )
         FactoryMethodName        ( enabled : false )
         CatchThrowable           ( enabled : false )
+        SpaceBeforeOpeningBrace  ( enabled : false )
+        SpaceBeforeClosingBrace  ( enabled : false )
+        SpaceAfterClosingBrace   ( enabled : false )
+        SpaceAfterOpeningBrace   ( enabled : false )
+        SpaceAfterComma          ( enabled : false )
 
         VariableName             ( finalRegex : /\w+/ )
         LineLength               ( length     : 190   )

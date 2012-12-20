@@ -138,7 +138,7 @@ class GeneralBeanTest extends BaseTest
 
         assert '12345' == generalBean.tryIt( 1, String ) { '12345' }
         assert 12345   == generalBean.tryIt( 1, Number ) {  12345  }
-        assert 12345   == generalBean.tryIt( 1, Number ) { 12345 -5 + 5 }
+        assert 12345   == generalBean.tryIt( 1, Number ) { 12345 - 5 + 5 }
 
         def c =
         {
