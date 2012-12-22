@@ -11,7 +11,7 @@ ext.codenarcRuleSetFiles = [ 'codenarc.groovy' ]
 apply from: 'https://raw.github.com/evgeny-goldin/gradle-plugins/master/codenarc/CodeNarc.gradle'
 
 
-defaultTasks 'duplicates', 'clean', 'codenarc', 'build', 'groovydoc', 'install'
+defaultTasks 'duplicates', 'clean', 'codenarc', 'build', 'install'
 
 
 sourceCompatibility          = 1.6
@@ -31,8 +31,8 @@ final guiceVersion           = '3.0'            // http://search.maven.org/#sear
 
 buildscript {
     repositories { maven { url 'http://evgenyg.artifactoryonline.com/evgenyg/repo/' }}
-    dependencies { classpath   'com.github.goldin.plugins.gradle:about:0.2-SNAPSHOT',
-                               'com.github.goldin.plugins.gradle:duplicates:0.2-SNAPSHOT' }
+    dependencies { classpath   'com.github.goldin.plugins.gradle:about:0.2-beta-5',
+                               'com.github.goldin.plugins.gradle:duplicates:0.2-beta-5' }
 }
 
 
