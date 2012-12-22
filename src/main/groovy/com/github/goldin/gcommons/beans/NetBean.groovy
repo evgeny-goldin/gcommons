@@ -6,6 +6,8 @@ import org.apache.commons.net.ftp.FTP
 import org.apache.commons.net.ftp.FTPClient
 import org.apache.commons.net.ftp.FTPFile
 import org.apache.commons.net.ftp.FTPReply
+import org.gcontracts.annotations.Ensures
+import org.gcontracts.annotations.Requires
 
 import java.util.regex.Matcher
 
@@ -29,17 +31,18 @@ class NetBean extends BaseBean
      * @param path network path to parse
      * @return map with following entries: "protocol", "username", "password", "host", "directory"
      */
+    @Requires({ path })
+    @Ensures ({ result.protocol && result.username && result.password && result.host && result.directory })
     Map<String, String> parseNetworkPath( String path )
     {
         assert isNet( verify().notNullOrEmpty( path ))
         Matcher matcher = ( path =~ constants().NETWORK_PATTERN )
 
-        assert ( matcher.find() && ( matcher.groupCount() == 5 )), \
-               "Unable to parse [$path] as network path: it should be in format [<protocol>://<user>:<password>@<host>:<path>]. " +
-               "Regex pattern is [${ constants().NETWORK_PATTERN }]"
+        assert ( matcher.find() && ( matcher.groupCount() == 5 )),
+               "Unable to parse [$path] as network path: should be in format \"<protocol>://<user>:<password>@<host>:<path>\""
 
         def ( String protocol, String username, String password, String host, String directory ) =
-            matcher[ 0 ][ 1 .. 5 ].collect{ verify().notNullOrEmpty( it ) }
+            matcher[ 0 ][ 1 .. 5 ].collect{ String s -> verify().notNullOrEmpty( s ) }
 
         [
             protocol  : protocol,
