@@ -127,7 +127,7 @@ class GeneralBean extends BaseBean
      * @return         instance specified as a single-element array or array specified if instance is null.
      */
     @Ensures({ result != null })
-    List list ( Object[] array, Object instance )
+    public <T> List<T> list ( T[] array, T instance )
     {
         ( array )            ? array.toList() :
         ( instance != null ) ? [ instance ]   :
