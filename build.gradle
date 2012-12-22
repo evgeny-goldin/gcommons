@@ -1,4 +1,3 @@
-
 apply plugin: 'groovy'
 apply plugin: 'maven'
 apply plugin: 'idea'
@@ -35,6 +34,8 @@ buildscript {
                                'com.github.goldin.plugins.gradle:duplicates:0.2-beta-5' }
 }
 
+final extraJars = ( ! project.hasProperty( 'nj' /* no jars */ ))
+println "> Running Gradle [${ project.gradle.gradleVersion }], Groovy [${ GroovySystem.version }], Java [${ System.getProperty( 'java.version' ) }]"
 
 repositories { maven { url 'http://evgenyg.artifactoryonline.com/evgenyg/repo/' }}
 about        { includeDependencies = [ 'compile', 'runtime' ] }
@@ -132,20 +133,25 @@ test {
 jar.dependsOn 'about'
 
 task sourcesJar( type: Jar, dependsOn: classes ) {
+    onlyIf { extraJars }
     dependsOn 'about'
     classifier = 'sources'
     from sourceSets.main.allSource
 }
 
 task groovydocJar( type: Jar, dependsOn: groovydoc ) {
+    onlyIf { extraJars }
     dependsOn 'about'
     classifier = 'javadoc'
     from groovydoc.destinationDir
 }
 
-artifacts {
-     archives sourcesJar
-     archives groovydocJar
+if ( extraJars )
+{
+    artifacts {
+         archives sourcesJar
+         archives groovydocJar
+    }
 }
 
 task wrapper( type: Wrapper ) { gradleVersion = '1.3' }
