@@ -23,14 +23,32 @@ class NetBeanTest extends BaseTest
             def map = parseNetworkPath( 'ftp://someUser:somePassword@someServer:/somePath' )
             assert [ 'ftp', 'someUser', 'somePassword', 'someServer', '/somePath' ] ==
                    [ map.protocol, map.username, map.password, map.host, map.directory ]
+            assert map.size() == 5
 
             map = parseNetworkPath( 'scp://another.user:strange@passw@rd@aaa.server.com:/' )
             assert [ 'scp', 'another.user', 'strange@passw@rd', 'aaa.server.com', '/' ] ==
                    [ map.protocol, map.username, map.password, map.host, map.directory ]
+            assert map.size() == 5
 
             map = parseNetworkPath( 'http://another.-weir.d.user:even-more.!strange@passw@rd@address.server.com:path' )
             assert [ 'http', 'another.-weir.d.user', 'even-more.!strange@passw@rd', 'address.server.com', 'path' ] ==
                    [ map.protocol, map.username, map.password, map.host, map.directory ]
+            assert map.size() == 5
+
+            map = parseNetworkPath( 'ftp://someUser:somePassword@someServer:11:/somePath' )
+            assert [ 'ftp', 'someUser', 'somePassword', 'someServer', '11', '/somePath' ] ==
+                   [ map.protocol, map.username, map.password, map.host, map.port, map.directory ]
+            assert map.size() == 6
+
+            map = parseNetworkPath( 'scp://another.user:strange@passw@rd@aaa.server.com:22:/' )
+            assert [ 'scp', 'another.user', 'strange@passw@rd', 'aaa.server.com', '22', '/' ] ==
+                   [ map.protocol, map.username, map.password, map.host, map.port, map.directory ]
+            assert map.size() == 6
+
+            map = parseNetworkPath( 'http://another.-weir.d.user:even-more.!strange@passw@rd@address.server.com:port3:~' )
+            assert [ 'http', 'another.-weir.d.user', 'even-more.!strange@passw@rd', 'address.server.com', 'port3', '~' ] ==
+                   [ map.protocol, map.username, map.password, map.host, map.port, map.directory ]
+            assert map.size() == 6
         }
     }
 

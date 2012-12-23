@@ -38,11 +38,14 @@ class NetBean extends BaseBean
         assert isNet( verify().notNullOrEmpty( path ))
         Matcher matcher = ( path =~ constants().NETWORK_PATTERN )
 
-        assert ( matcher.find() && ( matcher.groupCount() == 5 )),
-               "Unable to parse [$path] as network path: should be in format \"<protocol>://<user>:<password>@<host>:<path>\""
+        assert ( matcher.find() && ( matcher.groupCount() == 6 )),
+               "Unable to parse [$path] as network path: should be in format " +
+               "\"protocol://user:password@host:path\" or \"protocol://user:password@host:port:path\""
 
-        def ( String protocol, String username, String password, String host, String directory ) =
-            matcher[ 0 ][ 1 .. 5 ].collect{ String s -> verify().notNullOrEmpty( s ) }
+        def ( String protocol, String username, String password, String host, String port, String directory ) =
+            matcher[ 0 ][ 1 .. 6 ]
+
+        verify().notNullOrEmpty( protocol, username, password, host, directory )
 
         [
             protocol  : protocol,
@@ -50,7 +53,7 @@ class NetBean extends BaseBean
             password  : password,
             host      : host,
             directory : directory.replace( '\\', '/' )
-        ]
+        ] + ( port ? [ port : port ] : [:] )
     }
 
 

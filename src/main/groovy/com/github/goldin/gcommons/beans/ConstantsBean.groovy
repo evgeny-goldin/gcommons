@@ -15,7 +15,12 @@ class ConstantsBean extends BaseBean
     public static final File    USER_DIR_FILE    = new File( USER_DIR )
     public static final File    USER_HOME_FILE   = new File( USER_HOME )
 
-    public static final Pattern NETWORK_PATTERN  = ~/^(?i)(http|scp|ftp):(?:\/)+(.+):(.+)@(.+):(.+)$/
+    /**
+     * Matches
+     * protocol://user:password@host:path
+     * protocol://user:password@host:port:path
+     */
+    public static final Pattern NETWORK_PATTERN  = ~/^(?i)(http|scp|ftp):(?:\/)+(.+?):(.+)@(.+?):(?:(.+?):)?(.+)$/
 
     public static final int    MILLIS_IN_SECOND  = 1000 // Milliseconds in a second
     public static final int    SECONDS_IN_MINUTE = 60   // Seconds in a minute
