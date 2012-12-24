@@ -74,26 +74,16 @@ class FileBean extends BaseBean
      * @return temp file created.
      */
     @SuppressWarnings( 'FileCreateTempFile' )
-    @Ensures({ result.file })
-    File tempFile( String suffix = '' )
-    {
-        final  tempFile = File.createTempFile( GeneralBean.name, suffix ).canonicalFile
-        assert tempFile.file && tempFile.size() == 0
-        tempFile
-    }
+    @Ensures({ result.file && ( result.size() == 0 ) })
+    File tempFile( String suffix = '' ) { File.createTempFile( GeneralBean.name, suffix ).canonicalFile }
 
 
     /**
      * Creates a temp directory.
      * @return temp directory created.
      */
-    @Ensures({ result.directory })
-    File tempDirectory()
-    {
-        final  tempDir = mkdirs( delete( tempFile()))
-        assert tempDir.directory && ( tempDir.list().size() == 0 )
-        tempDir
-    }
+    @Ensures({ result.directory && ( result.list().size() == 0 ) })
+    File tempDirectory(){ mkdirs ( delete( tempFile())) }
 
 
     /**
