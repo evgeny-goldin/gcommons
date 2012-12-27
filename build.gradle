@@ -76,8 +76,7 @@ dependencies {
         exclude group: 'commons-logging'
     }
 
-    runtime     "org.apache.ant:ant-commons-net:$antVersion",
-                "org.slf4j:slf4j-log4j12:$slf4jVersion"
+    runtime     "org.apache.ant:ant-commons-net:$antVersion"
 
     testCompile "org.codehaus.groovy:groovy-test:$groovyVersion",
                 "junit:junit:$junitVersion"
@@ -92,8 +91,8 @@ dependencies {
         exclude group: 'junit'
     }
 
-    // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22log4j%22%20AND%20a%3A%22log4j%22
-    testRuntime 'log4j:log4j:1.2.17'
+    // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22ch.qos.logback%22%20AND%20a%3A%22logback-classic%22
+    testRuntime 'ch.qos.logback:logback-classic:1.0.9'
 }
 
 
@@ -108,13 +107,7 @@ idea.project {
 idea.module {
     downloadSources = true
     downloadJavadoc = false
-
     excludeDirs += file( 'out' )
-
-    iml.withXml {
-        provider ->
-        provider.node.component.first().appendNode( 'orderEntry', [ type : 'library', name : 'Groovy', level: 'application' ])
-    }
 }
 
 task downloadTestArchives( type: Copy ) {
