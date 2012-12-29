@@ -153,7 +153,7 @@ class VerifyBeanEqualTest extends BaseTest
             shouldFailAssert {  equal( srcDir, srcDir, true,  '*.groovy' )}
             equal( srcDir, srcDir, true, '**/*.groovy' )
 
-            equal( srcDir, srcDir, true, '**/*.xml'    )
+            equal( srcDir, srcDir, true, '**/*.txt'    )
 
             def d1 = tempDirectory()
             def d2 = tempDirectory()
