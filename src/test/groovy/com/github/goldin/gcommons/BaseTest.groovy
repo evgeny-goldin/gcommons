@@ -19,6 +19,8 @@ class BaseTest
     final GroovyBean     groovyBean    = GCommons.groovy()
     final AlgorithmsBean algBean       = GCommons.alg()
 
+    static final String MAVEN_TEST_RESOURCE  = 'apache-maven-3.0.1'
+    static final String GRADLE_TEST_RESOURCE = 'gradle-0.9'
 
     /**
      * Retrieves test archives map: name => unpacked size.
@@ -26,7 +28,8 @@ class BaseTest
      */
     protected Map<String, Long> testArchives()
     {
-        [ 'apache-maven-3.0.1' : 3344327L ] + ( System.getProperty( 'slowTests' ) ? [ 'gradle-0.9' : 27848286L ] : [:] )
+        [ "$MAVEN_TEST_RESOURCE" : 3344327L ] +
+        ( System.getProperty( 'slowTests' ) ? [ "$GRADLE_TEST_RESOURCE" : 56052721L ] : [:] )
     }
 
 
