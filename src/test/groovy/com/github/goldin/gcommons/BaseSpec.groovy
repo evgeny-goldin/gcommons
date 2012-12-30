@@ -34,7 +34,7 @@ class BaseSpec extends Specification
     protected Map<String, Long> testArchives()
     {
         [ "$MAVEN_TEST_RESOURCE" : 3344327L ] +
-        ( System.getProperty( 'slowTests' ) ? [ "$GRADLE_TEST_RESOURCE" : 27848286L ] : [:] )
+        ( System.getProperty( 'slowTests' ) ? [ "$GRADLE_TEST_RESOURCE" : 56052721L ] : [:] )
     }
 
 
