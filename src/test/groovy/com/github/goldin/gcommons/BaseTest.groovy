@@ -28,8 +28,8 @@ class BaseTest
      */
     protected Map<String, Long> testArchives()
     {
-        [ "$MAVEN_TEST_RESOURCE" : 3344327L ] +
-        ( System.getProperty( 'slowTests' ) ? [ "$GRADLE_TEST_RESOURCE" : 56052721L ] : [:] )
+        [ ( "$MAVEN_TEST_RESOURCE".toString()) : 3344327L ] +
+        ( System.getProperty( 'slowTests' ) ? [ ( "$GRADLE_TEST_RESOURCE".toString()) : 56052721L ] : [:] )
     }
 
 
