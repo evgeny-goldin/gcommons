@@ -32,7 +32,7 @@ groovydoc {
 </script>
 """
 
-    link 'http://static.springsource.org/spring/docs/3.1.x/javadoc-api/', 'org.springframework.'
+    link 'http://static.springsource.org/spring/docs/3.2.x/javadoc-api/', 'org.springframework.'
     link 'http://download.oracle.com/javase/6/docs/api/',                 'java.'
     link 'http://groovy.codehaus.org/api/',                               'groovy.', 'org.codehaus.groovy.'
     link 'http://commons.apache.org/net/apidocs/',                        'org.apache.commons.net.'

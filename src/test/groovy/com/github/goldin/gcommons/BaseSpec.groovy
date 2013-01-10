@@ -1,8 +1,11 @@
 package com.github.goldin.gcommons
 
-import java.security.SecureRandom
-import spock.lang.Specification
 import com.github.goldin.gcommons.beans.*
+import org.gcontracts.annotations.Ensures
+import org.gcontracts.annotations.Requires
+import spock.lang.Specification
+import java.security.SecureRandom
+
 
 /**
  * {@link BaseTest} copy.
@@ -20,7 +23,7 @@ class BaseSpec extends Specification
     final NetBean        netBean       = GCommons.net()
     final GroovyBean     groovyBean    = GCommons.groovy()
     final AlgorithmsBean algBean       = GCommons.alg()
-    final Random         random        = new SecureRandom( new BigInteger( System.currentTimeMillis()).toByteArray())
+    final Random         random        = new SecureRandom( new BigInteger( System.currentTimeMillis() as String ).toByteArray())
 
     static final String MAVEN_TEST_RESOURCE  = 'apache-maven-3.0.1'
     static final String GRADLE_TEST_RESOURCE = 'gradle-0.9'
@@ -53,6 +56,8 @@ class BaseSpec extends Specification
      * @param path resource path
      * @return test resource specified
      */
+    @Requires({ path })
+    @Ensures ({ result.file })
     protected final File testResource( String path )
     {
         def file = new File( 'src/test/resources', path )
@@ -77,6 +82,9 @@ class BaseSpec extends Specification
     /**
      * {@link GroovyTestCase} wrappers
      */
+    @SuppressWarnings([ 'GroovyAccessibility' ])
+    @Requires({ c })
+    @Ensures ({ result != null })
     protected String shouldFailAssert ( Closure c ) { new GroovyTestCase().shouldFail( AssertionError, c ) }
 
 
@@ -85,8 +93,8 @@ class BaseSpec extends Specification
      * @param dirName test directory name
      * @return test directory to use
      */
-//    @Requires({ testName })
-//    @Ensures({ result.directory && ( ! result.listFiles()) })
+    @Requires({ testName })
+    @Ensures({ result.directory && ( ! result.listFiles()) })
     protected File testDir( String testName )
     {
         assert testName
@@ -99,6 +107,8 @@ class BaseSpec extends Specification
      * @param f file to write dummy data to
      * @return original file specified
      */
+    @Requires({ f && data })
+    @Ensures ({ result.is( f ) })
     File write( File f, String data = f.canonicalPath ){ assert f.parentFile.with { directory || mkdirs() }; f.write( data ); f }
 
 
@@ -111,8 +121,8 @@ class BaseSpec extends Specification
      *
      * @return number of files created
      */
-//    @Requires({ rootDirectory && ( n > 0 ) && c })
-//    @Ensures({ ( nFiles <= n ) && rootDirectory.listFiles() })
+    @Requires({ rootDirectory && ( n > 0 ) && newEntryCallback })
+    @Ensures({ ( result <= n ) && rootDirectory.listFiles() })
     protected int createRandomDirectory ( File rootDirectory, int n = 100, Closure newEntryCallback = {} )
     {
         assert rootDirectory && ( n > 0 ) && newEntryCallback

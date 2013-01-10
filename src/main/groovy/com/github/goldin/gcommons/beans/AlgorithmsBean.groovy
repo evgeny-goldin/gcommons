@@ -169,10 +169,7 @@ class AlgorithmsBean extends BaseBean
      */
     private int[] insertionSort ( int[] data, int arrayStart = 0, int arrayEnd = data.length )
     {
-        if (( arrayEnd - arrayStart ) < 2 )
-        {
-            return data
-        }
+        if (( arrayEnd - arrayStart ) < 2 ){ return data }
 
         /**
          * Finds index to insert the element specified in the range ending at "end" index.

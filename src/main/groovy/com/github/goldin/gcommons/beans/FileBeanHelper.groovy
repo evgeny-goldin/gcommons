@@ -1,10 +1,12 @@
 package com.github.goldin.gcommons.beans
 
 import static com.github.goldin.gcommons.GCommons.*
-import de.schlichtherle.io.GlobalArchiveDriverRegistry
-import de.schlichtherle.io.archive.spi.ArchiveDriver
+import de.schlichtherle.truezip.file.TFile
+import de.schlichtherle.truezip.file.TVFS
 import org.apache.tools.zip.ZipEntry
 import org.apache.tools.zip.ZipFile
+import de.schlichtherle.truezip.fs.FsDriverProvider
+import de.schlichtherle.truezip.file.TArchiveDetector
 import org.gcontracts.annotations.Ensures
 import org.gcontracts.annotations.Requires
 
@@ -39,21 +41,15 @@ final class FileBeanHelper
 
 
     /**
-     * Retrieves archive extensions that are supported by driver specified.
-     *
-     * @param requiredDriverClass driver class that supports extensions required
-     * @return extensions supported by driver specified: 'war', 'jar', 'zip', etc.
+     * Retrieves extensions recognized by drivers specified.
+     * @param classes driver classes
+     * @return extensions recognized by drivers specified
      */
-    protected Set<String> driverExtensions( Class<? extends ArchiveDriver> requiredDriverClass )
+    @Requires({ classes })
+    @Ensures ({ result  })
+    protected Set<String> extensions ( Class<? extends FsDriverProvider> ... classes )
     {
-        (( Map<String,?> ) GlobalArchiveDriverRegistry.INSTANCE ).findAll {
-            def extension, driver ->
-            def driverClass = (( driver instanceof ArchiveDriver ) ? driver.class :
-                               ( driver instanceof String        ) ? this.class.classLoader.loadClass( driver, true ) :
-                                                                     null )
-            driverClass && requiredDriverClass.isAssignableFrom( driverClass )
-        }.
-        keySet()*.toLowerCase()
+        classes.collect { it.newInstance().get().keySet()*.toString() }.flatten()
     }
 
 
@@ -188,7 +184,7 @@ final class FileBeanHelper
                 /**
                  * Splitting expression ('*.sh|755' or '*.sh') to include pattern and possible filemode (null if not used)
                  */
-                def ( String include, String filemode ) = expression.findAll( /^(.+?)(\|(${ constants().FILEMODE }))?$/ ){ it[ 1, 3 ] }[ 0 ]
+                def ( String include, String filemode ) = expression.findAll( ~/^(.+?)(\|(${ constants().FILEMODE }))?$/ ){ it[ 1, 3 ] }[ 0 ]
                 tarFileSetMap( directory, [ include ], excludes, failIfNotFound, fullpath, prefix, filemode )
             }
         }
@@ -218,7 +214,7 @@ final class FileBeanHelper
         for ( File file in fileBean.files( directory, includes, excludes, false, false, failIfNotFound ))
         {
             final filePath = fullpath ?: ( prefix ?: '' ) + fileBean.relativePath( directory, file )
-            de.schlichtherle.io.File.cp_p( file, new de.schlichtherle.io.File( archive, filePath ))
+            new TFile( file, TArchiveDetector.NULL ).cp_p( new TFile( archive, filePath ))
         }
 
         if ( manifestDir )
@@ -228,10 +224,10 @@ final class FileBeanHelper
 
             final manifestFile = verify().file( files.first())
             final manifestPath = fileBean.relativePath( manifestDir, manifestFile )
-            de.schlichtherle.io.File.cp_p( manifestFile, new de.schlichtherle.io.File( archive, manifestPath ))
+            new TFile( manifestFile, TArchiveDetector.NULL ).cp_p( new TFile( archive, manifestPath ))
         }
 
-        de.schlichtherle.io.File.umount()
+        TVFS.umount()
     }
 
 

@@ -1,9 +1,8 @@
 package com.github.goldin.gcommons.beans
 
+
 import static com.github.goldin.gcommons.GCommons.*
-import com.github.goldin.gcommons.util.SingleFileArchiveDetector
-import de.schlichtherle.io.archive.tar.TarDriver
-import de.schlichtherle.io.archive.zip.ZipDriver
+import com.github.goldin.gcommons.util.GCommonsFsDriverService
 import groovy.io.FileType
 import groovy.util.logging.Slf4j
 import org.apache.tools.ant.DirectoryScanner
@@ -11,7 +10,11 @@ import org.apache.tools.ant.util.FileUtils
 import org.apache.tools.zip.ZipFile
 import org.gcontracts.annotations.Ensures
 import org.gcontracts.annotations.Requires
-
+import de.schlichtherle.truezip.file.TArchiveDetector
+import de.schlichtherle.truezip.fs.archive.zip.ZipDriverService
+import de.schlichtherle.truezip.fs.archive.tar.TarDriverService
+import de.schlichtherle.truezip.file.TFile
+import de.schlichtherle.truezip.file.TVFS
 import java.security.MessageDigest
 
 
@@ -60,8 +63,8 @@ class FileBean extends BaseBean
          * user should have a full control over what's copied or packed
          */
         defaultExcludes.each { ant.defaultexcludes( remove : it ) }
-        zipExtensions  = helper.driverExtensions( ZipDriver )
-        tarExtensions  = ( helper.driverExtensions( TarDriver ))
+        zipExtensions  = helper.extensions( ZipDriverService, GCommonsFsDriverService )
+        tarExtensions  = helper.extensions( TarDriverService )
         gzipExtensions = [ 'gz' ] as Set
         allExtensions  = ( zipExtensions + tarExtensions + gzipExtensions ) as Set
     }
@@ -440,6 +443,7 @@ class FileBean extends BaseBean
      *
      * @return destination directory where archive was unpacked
      */
+    @SuppressWarnings([ 'GroovyIfStatementWithTooManyBranches' ])
     @Requires({ sourceArchive.file && ( sourceArchive.length() > 0  ) && destinationDirectory })
     @Ensures({ result.directory && ( result == destinationDirectory ) })
     File unpack ( File    sourceArchive,
@@ -461,12 +465,10 @@ class FileBean extends BaseBean
 
             log.info( "Unpacking [$archive] to [$directory] using ${ helper.toolName( useTrueZip )}" )
 
-            if ( useTrueZip ) {
-                def detector = new SingleFileArchiveDetector( archive, extension )
-                de.schlichtherle.io.Files.cp_r( true,
-                                                new de.schlichtherle.io.File( archive, detector ),
-                                                directory, detector, detector )
-                de.schlichtherle.io.File.umount()
+            if ( useTrueZip )
+            {
+                TFile.cp_rp( new TFile( archive ), new TFile( directory ), TArchiveDetector.NULL )
+                TVFS.umount()
             }
             else if ( zipExtensions.contains( extension ))
             {

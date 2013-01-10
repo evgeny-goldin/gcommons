@@ -1,8 +1,9 @@
 package com.github.goldin.gcommons.specs
+
 import com.github.goldin.gcommons.BaseSpec
 import com.github.goldin.gcommons.GCommons
+import com.github.goldin.gcommons.beans.FileBean
 import com.github.goldin.spock.extensions.testdir.TestDir
-import com.github.goldin.spock.extensions.with.With
 import groovy.io.FileType
 import groovy.util.logging.Slf4j
 import org.gcontracts.annotations.Requires
@@ -12,13 +13,15 @@ import org.gcontracts.annotations.Requires
  * {@link com.github.goldin.gcommons.beans.FileBean} Spock tests.
  */
 @Slf4j
-@With({ GCommons.file() })
 class FileBeanSpec extends BaseSpec
 {
     /**
      * Supported archive extensions
      */
     private static final List<String> TEST_EXTENSIONS = [ 'sar', 'hpi', 'sima', 'zip', 'jar', 'tar', 'tar.gz' ]
+
+
+    private final FileBean fileBean = GCommons.file()
 
 
     @SuppressWarnings( 'StatelessClass' )
@@ -42,30 +45,30 @@ class FileBeanSpec extends BaseSpec
         def fooFile    = new File( testDir, "${testArchive.key}.foo" )
 
         when:
-        unpack( zipFile,    zipUnpack1,             true  )
-        unpack( zipFile,    zipUnpack2,             false )
+        fileBean.unpack( zipFile,    zipUnpack1,             true  )
+        fileBean.unpack( zipFile,    zipUnpack2,             false )
 
-        pack  ( zipUnpack1, extFile1, [ '**' ], [], true  )
-        pack  ( zipUnpack2, extFile2, [ '**' ], [], false )
+        fileBean.pack  ( zipUnpack1, extFile1, [ '**' ], [], true  )
+        fileBean.pack  ( zipUnpack2, extFile2, [ '**' ], [], false )
 
-        unpack( extFile1,   extUnpack1,             true  )
-        unpack( extFile2,   extUnpack2,             false )
+        fileBean.unpack( extFile1,   extUnpack1,             true  )
+        fileBean.unpack( extFile2,   extUnpack2,             false )
 
         extFile1.renameTo( fooFile )
 
         then:
-        directorySize( zipUnpack1 ) == testArchive.value
-        directorySize( zipUnpack2 ) == testArchive.value
-        directorySize( extUnpack1 ) == testArchive.value
-        directorySize( extUnpack2 ) == testArchive.value
+        fileBean.directorySize( zipUnpack1 ) == testArchive.value
+        fileBean.directorySize( zipUnpack2 ) == testArchive.value
+        fileBean.directorySize( extUnpack1 ) == testArchive.value
+        fileBean.directorySize( extUnpack2 ) == testArchive.value
 
         verifyBean.equal( zipUnpack1, zipUnpack2 )
         verifyBean.equal( zipUnpack2, extUnpack1 )
         verifyBean.equal( extUnpack1, extUnpack2 )
         verifyBean.equal( extUnpack2, zipUnpack1 )
 
-        shouldFailAssert{ pack  ( zipUnpack1, fooFile )}.contains( 'unsupported archive extension "foo"' )
-        shouldFailAssert{ unpack( fooFile, zipUnpack1 )}.contains( 'unsupported archive extension "foo"' )
+        shouldFailAssert{ fileBean.pack  ( zipUnpack1, fooFile )}.contains( 'unsupported archive extension "foo"' )
+        shouldFailAssert{ fileBean.unpack( fooFile, zipUnpack1 )}.contains( 'unsupported archive extension "foo"' )
 
         where:
         [ testArchive, extension ] << [ testArchives(), TEST_EXTENSIONS ].combinations()
@@ -93,22 +96,22 @@ class FileBeanSpec extends BaseSpec
         def extUnpack4 = new File( testDir, "$extension-4" )
 
         when:
-        unpack( zipFile,   zipUnpack )
+        fileBean.unpack( zipFile,   zipUnpack )
 
-        pack  ( zipUnpack, extFile1, [ '**' ],          [], true,  true, false, [], '', prefix )
-        pack  ( zipUnpack, extFile2, [ '**' ],          [], false, true, false, [], '', prefix )
-        pack  ( zipUnpack, extFile3, [ '**/LICENSE*' ], [], true,  true, false, [], fullpath   )
-        pack  ( zipUnpack, extFile4, [ '**/LICENSE*' ], [], false, true, false, [], fullpath   )
+        fileBean.pack  ( zipUnpack, extFile1, [ '**' ],          [], true,  true, false, [], '', prefix )
+        fileBean.pack  ( zipUnpack, extFile2, [ '**' ],          [], false, true, false, [], '', prefix )
+        fileBean.pack  ( zipUnpack, extFile3, [ '**/LICENSE*' ], [], true,  true, false, [], fullpath   )
+        fileBean.pack  ( zipUnpack, extFile4, [ '**/LICENSE*' ], [], false, true, false, [], fullpath   )
 
-        unpack( extFile1,  extUnpack1 )
-        unpack( extFile2,  extUnpack2 )
-        unpack( extFile3,  extUnpack3 )
-        unpack( extFile4,  extUnpack4 )
+        fileBean.unpack( extFile1,  extUnpack1 )
+        fileBean.unpack( extFile2,  extUnpack2 )
+        fileBean.unpack( extFile3,  extUnpack3 )
+        fileBean.unpack( extFile4,  extUnpack4 )
 
         then:
-        directorySize( zipUnpack  ) == testArchive.value
-        directorySize( extUnpack1 ) == testArchive.value
-        directorySize( extUnpack2 ) == testArchive.value
+        fileBean.directorySize( zipUnpack  ) == testArchive.value
+        fileBean.directorySize( extUnpack1 ) == testArchive.value
+        fileBean.directorySize( extUnpack2 ) == testArchive.value
 
         verifyBean.equal( zipUnpack, new File( extUnpack1, prefix ))
         verifyBean.equal( zipUnpack, new File( extUnpack2, prefix ))
@@ -116,7 +119,7 @@ class FileBeanSpec extends BaseSpec
         verifyBean.file( new File( extUnpack3, fullpath ))
         verifyBean.file( new File( extUnpack4, fullpath ))
 
-        shouldFailAssert { pack( zipUnpack, extFile1, [ '**' ], [], false, true, false, [], fullpath, prefix )}
+        shouldFailAssert { fileBean.pack( zipUnpack, extFile1, [ '**' ], [], false, true, false, [], fullpath, prefix )}
 
         where:
         [ testArchive, extension, prefix, fullpath ] << [ testArchives(), TEST_EXTENSIONS, [ 'prefix-1/22/333' ], [ 'fullpath-1/22/333.txt' ]].
@@ -145,7 +148,7 @@ class FileBeanSpec extends BaseSpec
 
             shellFile.write( '#!/bin/bash\nuname -ap' )
             assert unpackDir.with { directory || mkdirs() }
-            pack( testDir, archiveFile, [ "*.sh|$filemode", '*.txt', '*.ppt', '*.php' ], [ '4.php' ] )
+            fileBean.pack( testDir, archiveFile, [ "*.sh|$filemode", '*.txt', '*.ppt', '*.php' ], [ '4.php' ] )
 
             generalBean.execute( "tar -xzf $archiveFile -C $unpackDir" )
             verifyBean.file( shellFileUnpacked )
@@ -173,7 +176,7 @@ class FileBeanSpec extends BaseSpec
         assert testDir.directory && ( ! testDir.listFiles())
 
         expect:
-        relativePath( new File( dir ), new File( file )) == path
+        fileBean.relativePath( new File( dir ), new File( file )) == path
 
         where:
         dir             | file                   | path
@@ -207,7 +210,7 @@ class FileBeanSpec extends BaseSpec
         assert new File( a, '1/2/3/5' ).mkdirs()
         assert new File( a, '1/aaaaa' ).mkdirs()
 
-        copyDir( a, b )
+        fileBean.copyDir( a, b )
 
         then:
         verifyBean.equal( a, b )
@@ -227,7 +230,7 @@ class FileBeanSpec extends BaseSpec
 
         when:
         createRandomDirectory( a, n )
-        copyDir( a, b, [ includes ], [ excludes ] )
+        fileBean.copyDir( a, b, [ includes ], [ excludes ] )
 
         then:
         verifyBean.equal( a, b, false, includes )
@@ -248,8 +251,8 @@ class FileBeanSpec extends BaseSpec
 
         when:
         createRandomDirectory( testDir, n ) { File f -> allFiles << f }
-        def allFiles1 = files( testDir )
-        def allFiles2 = files( testDir, [ '**/*' ], [], true, true )
+        def allFiles1 = fileBean.files( testDir )
+        def allFiles2 = fileBean.files( testDir, [ '**/*' ], [], true, true )
 
         then:
         allFiles2.size() > allFiles1.size()
@@ -277,18 +280,18 @@ class FileBeanSpec extends BaseSpec
         createRandomDirectory( testDir, randomN )
         def buildDir     = new File( constantsBean.USER_DIR_FILE, 'build' )
         def srcDir       = new File( constantsBean.USER_DIR_FILE, 'src' )
-        def allFiles     = files( constantsBean.USER_DIR_FILE )
-        def allFilesDirs = files( constantsBean.USER_DIR_FILE, null, null, true, true  )
-        def noTestsFiles = files( constantsBean.USER_DIR_FILE, ['**/*.groovy','**/*.class'], [ '**/*Test*.*', '**/*Spec*.*' ] )
-        def classFiles   = files( buildDir, [ '**/*.class'  ])
-        def sources      = files( srcDir,   [ '**/*.groovy' ])
-        def randomFiles  = files( testDir )
-        def randomFilesD = files( testDir, [], [], false, true )
+        def allFiles     = fileBean.files( constantsBean.USER_DIR_FILE )
+        def allFilesDirs = fileBean.files( constantsBean.USER_DIR_FILE, null, null, true, true  )
+        def noTestsFiles = fileBean.files( constantsBean.USER_DIR_FILE, ['**/*.groovy','**/*.class'], [ '**/*Test*.*', '**/*Spec*.*' ] )
+        def classFiles   = fileBean.files( buildDir, [ '**/*.class'  ])
+        def sources      = fileBean.files( srcDir,   [ '**/*.groovy' ])
+        def randomFiles  = fileBean.files( testDir )
+        def randomFilesD = fileBean.files( testDir, [], [], false, true )
 
 
         expect:
         allFiles && allFiles.each{ verifyBean.file( it ) }
-        allFiles == files( constantsBean.USER_DIR_FILE, [], [], true, false )
+        allFiles == fileBean.files( constantsBean.USER_DIR_FILE, [], [], true, false )
         ( allFiles.size() < allFilesDirs.size())
         ( allFilesDirs - allFiles ).each { verifyBean.directory( it )}
 
@@ -298,12 +301,12 @@ class FileBeanSpec extends BaseSpec
         verifyBean.file( sources    as File[] )
         classFiles.size() > sources.size()
 
-        files( buildDir, [ '**/*.noSuchThing' ], [], true, false, false ).empty
+        fileBean.files( buildDir, [ '**/*.noSuchThing' ], [], true, false, false ).empty
 
         ! noTestsFiles.any { it.name.with{ contains( 'Test' ) || contains( 'Spec' ) }}
         noTestsFiles.every { it.name.with{ endsWith( '.groovy' ) || endsWith( '.class' ) }}
 
-        shouldFailAssert { files( buildDir, ['**/*.noSuchThing'] )}
+        shouldFailAssert { fileBean.files( buildDir, ['**/*.noSuchThing'] )}
 
         randomFiles.each { verifyBean.file( it ) && it.name.endsWith( '.txt' )}
         ( randomFiles.size() <= randomN ) && ( randomFilesD.size() >= randomN )
@@ -316,7 +319,7 @@ class FileBeanSpec extends BaseSpec
         assert testDir.directory && ( ! testDir.listFiles())
 
         expect:
-        extension( new File( fileName )) == ext
+        fileBean.extension( new File( fileName )) == ext
 
         where:
         fileName                | ext
@@ -338,7 +341,7 @@ class FileBeanSpec extends BaseSpec
         assert testDir.directory && ( ! testDir.listFiles())
 
         expect:
-        extension( new File( fileName )) == ext
+        fileBean.extension( new File( fileName )) == ext
 
         where:
         fileName                | ext
@@ -375,30 +378,30 @@ class FileBeanSpec extends BaseSpec
         def unpack6 = new File( testDir, 'unpack/6' )
 
         when:
-        unpackZipEntries( zipFile, unpack1, [ '**/*.jar' ] )
-        unpackZipEntries( zipFile, unpack2, [], [ '**/*.jar' ] )
-        unpackZipEntries( zipFile, unpack3, [ '**/*.jar' ], [ '**/m*.*' ] )
-        unpackZipEntries( zipFile, unpack4, [ '**/*.jar' ], [ "$testArchive/lib/maven-core-3.0.1.jar" ] )
-        unpackZipEntries( zipFile, unpack5, [ "$testArchive/lib/plexus-utils-2.0.4.jar" ], [ "$testArchive/lib/maven-core-3.0.1.jar" ] )
-        unpackZipEntries( zipFile, unpack6, [ '**/*.exe', 'no-such-file', '**/*.jar' ], [ '**/m*.*' ], true, false )
+        fileBean.unpackZipEntries( zipFile, unpack1, [ '**/*.jar' ] )
+        fileBean.unpackZipEntries( zipFile, unpack2, [], [ '**/*.jar' ] )
+        fileBean.unpackZipEntries( zipFile, unpack3, [ '**/*.jar' ], [ '**/m*.*' ] )
+        fileBean.unpackZipEntries( zipFile, unpack4, [ '**/*.jar' ], [ "$testArchive/lib/maven-core-3.0.1.jar" ] )
+        fileBean.unpackZipEntries( zipFile, unpack5, [ "$testArchive/lib/plexus-utils-2.0.4.jar" ], [ "$testArchive/lib/maven-core-3.0.1.jar" ] )
+        fileBean.unpackZipEntries( zipFile, unpack6, [ '**/*.exe', 'no-such-file', '**/*.jar' ], [ '**/m*.*' ], true, false )
 
         then:
-        32      == recurse( unpack1, [ type: FileType.FILES ], { File f -> assert   f.name.endsWith( '.jar' )}).size()
-        10      == recurse( unpack2, [ type: FileType.FILES ], { File f -> assert ! f.name.endsWith( '.jar' )}).size()
-        21      == recurse( unpack3, [ type: FileType.FILES ], { File f -> assert   f.name.endsWith( '.jar' )}).size()
-        31      == recurse( unpack4, [ type: FileType.FILES ], { File f -> assert   f.name.endsWith( '.jar' ) && ( ! f.name.contains( 'maven-core-3.0.1' )) }).size()
-        1       == recurse( unpack5, [ type: FileType.FILES ], { File f -> assert   f.name == 'plexus-utils-2.0.4.jar' }).size()
+        32      == fileBean.recurse( unpack1, [ type: FileType.FILES ], { File f -> assert   f.name.endsWith( '.jar' )}).size()
+        10      == fileBean.recurse( unpack2, [ type: FileType.FILES ], { File f -> assert ! f.name.endsWith( '.jar' )}).size()
+        21      == fileBean.recurse( unpack3, [ type: FileType.FILES ], { File f -> assert   f.name.endsWith( '.jar' )}).size()
+        31      == fileBean.recurse( unpack4, [ type: FileType.FILES ], { File f -> assert   f.name.endsWith( '.jar' ) && ( ! f.name.contains( 'maven-core-3.0.1' )) }).size()
+        1       == fileBean.recurse( unpack5, [ type: FileType.FILES ], { File f -> assert   f.name == 'plexus-utils-2.0.4.jar' }).size()
 
-        3301021 == directorySize( unpack1 )
-        43306   == directorySize( unpack2 )
-        1860093 == directorySize( unpack3 )
-        2770664 == directorySize( unpack4 )
-        222137  == directorySize( unpack5 )
+        3301021 == fileBean.directorySize( unpack1 )
+        43306   == fileBean.directorySize( unpack2 )
+        1860093 == fileBean.directorySize( unpack3 )
+        2770664 == fileBean.directorySize( unpack4 )
+        222137  == fileBean.directorySize( unpack5 )
 
         verifyBean.equal( unpack3, unpack6 )
 
-        shouldFailAssert { unpackZipEntries( zipFile, unpack1, [ "$testArchive/lib/maven-core-3.0.1.jar" ], [ "$testArchive/lib/maven-core-3.0.1.jar" ] )}
-        shouldFailAssert { unpackZipEntries( zipFile, unpack1, [ '**/*.bat' ], [ '**/m*'   ] )}
+        shouldFailAssert { fileBean.unpackZipEntries( zipFile, unpack1, [ "$testArchive/lib/maven-core-3.0.1.jar" ], [ "$testArchive/lib/maven-core-3.0.1.jar" ] )}
+        shouldFailAssert { fileBean.unpackZipEntries( zipFile, unpack1, [ '**/*.bat' ], [ '**/m*'   ] )}
 
         where:
         testArchive << [ MAVEN_TEST_RESOURCE ]
@@ -422,37 +425,37 @@ class FileBeanSpec extends BaseSpec
         def unpack8 = new File( testDir, 'unpack/8' )
 
         when:
-        unpackZipEntries( zipFile, unpack1, [ '**/*.jar' ] )
-        unpackZipEntries( zipFile, unpack2, [], [ '**/*.html', '**/*.groovy', '**/*.java' ] )
-        unpackZipEntries( zipFile, unpack3, [ '**/*.jar', '**/*.html', '**/*.groovy' ], [ '**/*d*', '**/*e*' ] )
-        unpackZipEntries( zipFile, unpack4, [ '**/*.html' ], [ '**/docs/**' ] )
-        unpackZipEntries( zipFile, unpack5, [ "$testArchive/src/org/gradle/api/**/*.groovy" ], [ "$testArchive/src/org/gradle/**/internal/**" ] )
-        unpackZipEntries( zipFile, unpack6, [ "$testArchive/src/org/gradle/**" ],              [ '**/*.groovy', '**/*.java' ] )
-        unpackZipEntries( zipFile, unpack7, [ "$testArchive/src/org/gradle/**" ],              [ '**/*.groovy', '**/*.java', '**/*.txt', '**/*.png', '**/*.xml' ] )
-        unpackZipEntries( zipFile, unpack8, [ '**/*.dll', 'no-such-file', '**/*.html' ], [ '**/docs/**' ], true, false )
+        fileBean.unpackZipEntries( zipFile, unpack1, [ '**/*.jar' ] )
+        fileBean.unpackZipEntries( zipFile, unpack2, [], [ '**/*.html', '**/*.groovy', '**/*.java' ] )
+        fileBean.unpackZipEntries( zipFile, unpack3, [ '**/*.jar', '**/*.html', '**/*.groovy' ], [ '**/*d*', '**/*e*' ] )
+        fileBean.unpackZipEntries( zipFile, unpack4, [ '**/*.html' ], [ '**/docs/**' ] )
+        fileBean.unpackZipEntries( zipFile, unpack5, [ "$testArchive/src/org/gradle/api/**/*.groovy" ], [ "$testArchive/src/org/gradle/**/internal/**" ] )
+        fileBean.unpackZipEntries( zipFile, unpack6, [ "$testArchive/src/org/gradle/**" ],              [ '**/*.groovy', '**/*.java' ] )
+        fileBean.unpackZipEntries( zipFile, unpack7, [ "$testArchive/src/org/gradle/**" ],              [ '**/*.groovy', '**/*.java', '**/*.txt', '**/*.png', '**/*.xml' ] )
+        fileBean.unpackZipEntries( zipFile, unpack8, [ '**/*.dll', 'no-such-file', '**/*.html' ], [ '**/docs/**' ], true, false )
 
         then:
-        108      == recurse( unpack1, [ type: FileType.FILES ], { File f -> assert   f.name.endsWith( '.jar' )}).size()
-        522      == recurse( unpack2, [ type: FileType.FILES ], { File f -> assert ! [ 'html', 'groovy', 'java' ].any { f.name.endsWith( ".$it" ) }}).size()
-        149      == recurse( unpack3, [ type: FileType.FILES ], { File f -> assert ! [ 'd', 'e' ].any { f.name.contains( it ) }}).size()
-        7        == recurse( unpack4, [ type: FileType.FILES ], { File f -> assert f.name.endsWith( '.html'   ) && ( ! f.path.contains ( 'docs'     )) }).size()
-        32       == recurse( unpack5, [ type: FileType.FILES ], { File f -> assert f.name.endsWith( '.groovy' ) && ( ! f.path.contains ( 'internal' )) }).size()
-        29       == recurse( unpack6, [ type: FileType.FILES ], { File f -> assert [ 'gradle', 'html', 'png', 'properties', 'txt', 'xml' ].any{ f.name.endsWith( ".$it" ) }}).size()
-        4        == recurse( unpack7, [ type: FileType.FILES ], { File f -> assert [ 'gradle', 'html', 'properties' ].any{ f.name.endsWith( ".$it" ) }}).size()
+        108      == fileBean.recurse( unpack1, [ type: FileType.FILES ], { File f -> assert   f.name.endsWith( '.jar' )}).size()
+        522      == fileBean.recurse( unpack2, [ type: FileType.FILES ], { File f -> assert ! [ 'html', 'groovy', 'java' ].any { f.name.endsWith( ".$it" ) }}).size()
+        149      == fileBean.recurse( unpack3, [ type: FileType.FILES ], { File f -> assert ! [ 'd', 'e' ].any { f.name.contains( it ) }}).size()
+        7        == fileBean.recurse( unpack4, [ type: FileType.FILES ], { File f -> assert f.name.endsWith( '.html'   ) && ( ! f.path.contains ( 'docs'     )) }).size()
+        32       == fileBean.recurse( unpack5, [ type: FileType.FILES ], { File f -> assert f.name.endsWith( '.groovy' ) && ( ! f.path.contains ( 'internal' )) }).size()
+        29       == fileBean.recurse( unpack6, [ type: FileType.FILES ], { File f -> assert [ 'gradle', 'html', 'png', 'properties', 'txt', 'xml' ].any{ f.name.endsWith( ".$it" ) }}).size()
+        4        == fileBean.recurse( unpack7, [ type: FileType.FILES ], { File f -> assert [ 'gradle', 'html', 'properties' ].any{ f.name.endsWith( ".$it" ) }}).size()
 
-        33788294 == directorySize( unpack1 )
-        35539173 == directorySize( unpack2 )
-        17339526 == directorySize( unpack3 )
-        33352    == directorySize( unpack4 )
-        88130    == directorySize( unpack5 )
-        43630    == directorySize( unpack6 )
-        6033     == directorySize( unpack7 )
+        33788294 == fileBean.directorySize( unpack1 )
+        35539173 == fileBean.directorySize( unpack2 )
+        17339526 == fileBean.directorySize( unpack3 )
+        33352    == fileBean.directorySize( unpack4 )
+        88130    == fileBean.directorySize( unpack5 )
+        43630    == fileBean.directorySize( unpack6 )
+        6033     == fileBean.directorySize( unpack7 )
 
         verifyBean.equal( unpack4, unpack8 )
 
-        shouldFailAssert { unpackZipEntries( zipFile, unpack1, [ '**/*.html' ],       [ '**/*.html'     ] )}
-        shouldFailAssert { unpackZipEntries( zipFile, unpack1, [ '**/*.groovy' ],     [ '**/*r*'        ] )}
-        shouldFailAssert { unpackZipEntries( zipFile, unpack1, [ '**/build.gradle' ], [ '**/samples/**' ] )}
+        shouldFailAssert { fileBean.unpackZipEntries( zipFile, unpack1, [ '**/*.html' ],       [ '**/*.html'     ] )}
+        shouldFailAssert { fileBean.unpackZipEntries( zipFile, unpack1, [ '**/*.groovy' ],     [ '**/*r*'        ] )}
+        shouldFailAssert { fileBean.unpackZipEntries( zipFile, unpack1, [ '**/build.gradle' ], [ '**/samples/**' ] )}
 
         where:
         testArchive << [ GRADLE_TEST_RESOURCE ]
@@ -470,18 +473,18 @@ class FileBeanSpec extends BaseSpec
 
         expect:
         counter == nFiles
-        recurse( testDir, [ type: FileType.FILES       ], { File f -> assert f.file      }).size() == nFiles
-        recurse( testDir, [ type: FileType.DIRECTORIES ], { File f -> assert f.directory }).size() >  nFiles
-        recurse( testDir, [ type: FileType.ANY         ], {}                              ).size() >  nFiles
+        fileBean.recurse( testDir, [ type: FileType.FILES       ], { File f -> assert f.file      }).size() == nFiles
+        fileBean.recurse( testDir, [ type: FileType.DIRECTORIES ], { File f -> assert f.directory }).size() >  nFiles
+        fileBean.recurse( testDir, [ type: FileType.ANY         ], {}                              ).size() >  nFiles
 
-        recurse( testDir, [ type: FileType.FILES,       returnList: false ], {}).empty
-        recurse( testDir, [ type: FileType.DIRECTORIES, returnList: false ], {}).empty
+        fileBean.recurse( testDir, [ type: FileType.FILES,       returnList: false ], {}).empty
+        fileBean.recurse( testDir, [ type: FileType.DIRECTORIES, returnList: false ], {}).empty
 
-        recurse( testDir, [ type: FileType.FILES       ], { File f -> assert f.file      }).every { File f -> f.file      }
-        recurse( testDir, [ type: FileType.DIRECTORIES ], { File f -> assert f.directory }).every { File f -> f.directory }
+        fileBean.recurse( testDir, [ type: FileType.FILES       ], { File f -> assert f.file      }).every { File f -> f.file      }
+        fileBean.recurse( testDir, [ type: FileType.DIRECTORIES ], { File f -> assert f.directory }).every { File f -> f.directory }
 
-        shouldFailAssert { recurse( testDir, [ something: 'anything' ], {} )}
-        shouldFailAssert { recurse( testDir, [ tyype    : 'typo'     ], {} )}
+        shouldFailAssert { fileBean.recurse( testDir, [ something: 'anything' ], {} )}
+        shouldFailAssert { fileBean.recurse( testDir, [ tyype    : 'typo'     ], {} )}
     }
 
 
@@ -491,13 +494,13 @@ class FileBeanSpec extends BaseSpec
         assert testDir.directory && ( ! testDir.listFiles())
 
         expect:
-        [] == files( new File( 'no-such-directory' ), [ '**' ],       [],       true, false, false )
-        [] == files( new File( 'no-such-directory' ), [ '**/*.exe' ], [],       true, false, false )
-        [] == files( new File( 'no-such-directory' ), [],             [ '**' ], true, false, false )
+        [] == fileBean.files( new File( 'no-such-directory' ), [ '**' ],       [],       true, false, false )
+        [] == fileBean.files( new File( 'no-such-directory' ), [ '**/*.exe' ], [],       true, false, false )
+        [] == fileBean.files( new File( 'no-such-directory' ), [],             [ '**' ], true, false, false )
 
-        [] == files( constantsBean.USER_DIR_FILE, [ 'no-such-file.txt' ],  [],  true, false, false )
-        [] == files( constantsBean.USER_DIR_FILE, [ '**/*no-such-file*' ], [],  true, false, false )
-        [] == files( constantsBean.USER_DIR_FILE, [], [ '**' ],                 true, false, false )
+        [] == fileBean.files( constantsBean.USER_DIR_FILE, [ 'no-such-file.txt' ],  [],  true, false, false )
+        [] == fileBean.files( constantsBean.USER_DIR_FILE, [ '**/*no-such-file*' ], [],  true, false, false )
+        [] == fileBean.files( constantsBean.USER_DIR_FILE, [], [ '**' ],                 true, false, false )
     }
 
 
@@ -505,7 +508,7 @@ class FileBeanSpec extends BaseSpec
     def "gc-114: FileBean.baseName() - retrieve file base name" ( String fileName, String bName )
     {
         expect:
-        baseName( new File( fileName )) == bName
+        fileBean.baseName( new File( fileName )) == bName
 
         where:
         fileName                | bName
@@ -537,11 +540,11 @@ class FileBeanSpec extends BaseSpec
         final zip3      = new File( testDir, '3.zip'  )
         final zip4      = new File( testDir, '4.zip'  )
 
-        unpack( testResource( "${ testArchive }.zip" ), unpackDir )
+        fileBean.unpack( testResource( "${ testArchive }.zip" ), unpackDir )
 
-        pack( unpackDir, zip1, [ '**' ], [], false, true, false, null, null, null, true, null, 0 )
-        pack( unpackDir, zip2, [ '**' ], [], false, true, false, null, null, null, true, null, 5 )
-        pack( unpackDir, zip3, [ '**' ], [], false, true, false, null, null, null, true, null, 9 )
+        fileBean.pack( unpackDir, zip1, [ '**' ], [], false, true, false, null, null, null, true, null, 0 )
+        fileBean.pack( unpackDir, zip2, [ '**' ], [], false, true, false, null, null, null, true, null, 5 )
+        fileBean.pack( unpackDir, zip3, [ '**' ], [], false, true, false, null, null, null, true, null, 9 )
 
         expect:
         zip1.file && zip2.file && zip3.file
