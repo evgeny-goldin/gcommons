@@ -6,6 +6,7 @@ import com.github.goldin.gcommons.beans.FileBean
 import com.github.goldin.spock.extensions.testdir.TestDir
 import groovy.io.FileType
 import groovy.util.logging.Slf4j
+import org.gcontracts.annotations.Ensures
 import org.gcontracts.annotations.Requires
 
 
@@ -18,8 +19,18 @@ class FileBeanSpec extends BaseSpec
     /**
      * Supported archive extensions
      */
-    private static final List<String> TEST_EXTENSIONS = [ 'sar', 'hpi', 'sima', 'zip', 'jar', 'tar', 'tar.gz' ]
+    private static final List<String> TEST_EXTENSIONS = defaultExtensions()
 
+
+    @Ensures ({ result })
+    static List<String> defaultExtensions()
+    {
+        final defaultExtensions = FileBean.class.classLoader.getResource( 'META-INF/services/de.schlichtherle.io.registry.properties' ).
+                                  getText( 'UTF-8' ).readLines().first().
+                                  tokenize( '=' )*.trim().tail().head().
+                                  tokenize( '|' )
+        defaultExtensions
+    }
 
     private final FileBean fileBean = GCommons.file()
 
@@ -505,7 +516,7 @@ class FileBeanSpec extends BaseSpec
 
 
 
-    def "gc-114: FileBean.baseName() - retrieve file base name" ( String fileName, String bName )
+    def 'gc-114: FileBean.baseName() - retrieve file base name' ( String fileName, String bName )
     {
         expect:
         fileBean.baseName( new File( fileName )) == bName
@@ -531,7 +542,7 @@ class FileBeanSpec extends BaseSpec
     }
 
 
-    def "gc-115: FileBean.pack() - allow to set compression level when using Ant"( String testArchive )
+    def 'gc-115: FileBean.pack() - allow to set compression level when using Ant'( String testArchive )
     {
         given:
         final unpackDir = new File( testDir, 'unpack' )
@@ -561,7 +572,7 @@ class FileBeanSpec extends BaseSpec
     }
 
 
-    def "gc-118: Support *.gz archives unpack"()
+    def 'gc-118: Support *.gz archives unpack'()
     {
         given:
         final gzip = testResource( 'faa-1.gz' )
@@ -571,5 +582,80 @@ class FileBeanSpec extends BaseSpec
 
         then:
         GCommons.verify().file( new File( testDir, 'faa-1' )).name == 'faa-1'
+    }
+
+
+    def 'gc-120: Allow to specify custom archive formats for zip, tar, tar.gz and gz pack and unpack operations'()
+    {
+        given:
+        final zipAnt       = new File( testDir, 'fileAnt.z' )
+        final tarAnt       = new File( testDir, 'fileAnt.t' )
+        final tarGzAnt     = new File( testDir, 'fileAnt.tz' )
+        final zipTrueZip   = new File( testDir, 'fileTrueZip.z' )
+        final tarTrueZip   = new File( testDir, 'fileTrueZip.t' )
+        final tarGzTrueZip = new File( testDir, 'fileTrueZip.tz' )
+        final unpack1      = new File( testDir, '1' )
+        final unpack2      = new File( testDir, '2' )
+        final unpack3      = new File( testDir, '3' )
+        final unpack4      = new File( testDir, '4' )
+        final unpack5      = new File( testDir, '5' )
+        final unpack6      = new File( testDir, '6' )
+
+        fileBean.customArchiveFormats = [ zip: [ 'z' ] , tar: [ 't' ] , 'tar.gz': [ 'tz' ]]
+
+        fileBean.unpack( testResource( 'apache-maven-3.0.1.zip'    ), unpack1 )
+        fileBean.unpack( testResource( 'apache-maven-3.0.1.tar'    ), unpack2 )
+        fileBean.unpack( testResource( 'apache-maven-3.0.1.tar.gz' ), unpack3 )
+
+        verifyBean.equal( unpack1, unpack2 )
+        verifyBean.equal( unpack2, unpack3 )
+        verifyBean.equal( unpack3, unpack1 )
+
+        fileBean.pack( unpack1, zipAnt,       null, null, false )
+        fileBean.pack( unpack1, zipTrueZip,   null, null, true  )
+        fileBean.pack( unpack2, tarAnt,       null, null, false )
+        fileBean.pack( unpack2, tarTrueZip,   null, null, true  )
+        fileBean.pack( unpack3, tarGzAnt,     null, null, false )
+        fileBean.pack( unpack3, tarGzTrueZip, null, null, true  )
+
+        fileBean.unpack ( zipAnt,   unpack4, false )
+        fileBean.unpack ( tarAnt,   unpack5, false )
+        fileBean.unpack ( tarGzAnt, unpack6, false )
+
+        verifyBean.equal( unpack3, unpack4 )
+        verifyBean.equal( unpack4, unpack5 )
+        verifyBean.equal( unpack5, unpack6 )
+
+        fileBean.delete( unpack4, unpack5, unpack6 )
+
+        fileBean.unpack ( zipAnt,   unpack4, true )
+        fileBean.unpack ( tarAnt,   unpack5, true )
+        fileBean.unpack ( tarGzAnt, unpack6, true)
+
+        verifyBean.equal( unpack3, unpack4 )
+        verifyBean.equal( unpack4, unpack5 )
+        verifyBean.equal( unpack5, unpack6 )
+
+        fileBean.delete( unpack4, unpack5, unpack6 )
+
+        fileBean.unpack ( zipTrueZip,   unpack4, false )
+        fileBean.unpack ( tarTrueZip,   unpack5, false )
+        fileBean.unpack ( tarGzTrueZip, unpack6, false )
+
+        verifyBean.equal( unpack3, unpack4 )
+        verifyBean.equal( unpack4, unpack5 )
+        verifyBean.equal( unpack5, unpack6 )
+
+        fileBean.delete( unpack4, unpack5, unpack6 )
+
+        fileBean.unpack ( zipTrueZip,   unpack4, true )
+        fileBean.unpack ( tarTrueZip,   unpack5, true )
+        fileBean.unpack ( tarGzTrueZip, unpack6, true )
+
+        verifyBean.equal( unpack3, unpack4 )
+        verifyBean.equal( unpack4, unpack5 )
+        verifyBean.equal( unpack5, unpack6 )
+
+        fileBean.resetCustomArchiveFormats()
     }
 }

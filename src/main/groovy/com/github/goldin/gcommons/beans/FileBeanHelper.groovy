@@ -43,21 +43,15 @@ final class FileBeanHelper
      *         http://evgeny-goldin.org/javadoc/ant/CoreTasks/untar.html
      */
     @SuppressWarnings( 'GroovyMultipleReturnPointsPerMethod' )
-    protected String tarCompression( String archiveExtension )
+    @Requires({ archiveExtension && tarExtensions && tarGzExtensions })
+    @Ensures ({ result })
+    protected String tarCompression ( String archiveExtension, Collection<String> tarExtensions, Collection<String> tarGzExtensions )
     {
-        switch ( verify().notNullOrEmpty( archiveExtension ))
-        {
-            case 'tar'     : return 'none'
+        if ( tarExtensions.  contains( archiveExtension ))       { return 'none'  }
+        if ( tarGzExtensions.contains( archiveExtension ))       { return 'gzip'  }
+        if ( [ 'tbz2', 'tar.bz2' ].contains( archiveExtension )) { return 'bzip2' }
 
-            case 'gz'      :
-            case 'tgz'     :
-            case 'tar.gz'  : return 'gzip'
-
-            case 'tbz2'    :
-            case 'tar.bz2' : return 'bzip2'
-
-            default        : throw new IllegalArgumentException( "Unknown tar extension [$archiveExtension]" )
-        }
+        throw new IllegalArgumentException( "Unknown tar extension [$archiveExtension]" )
     }
 
 
@@ -140,14 +134,16 @@ final class FileBeanHelper
     @SuppressWarnings([ 'GroovyMethodParameterCount' ])
     @Requires({ directory.directory && archive })
     @Ensures({ archive.file })
-    protected void packAntTar ( File         directory,
-                                File         archive,
-                                List<String> includes,
-                                List<String> excludes,
-                                boolean      failIfNotFound,
-                                String       fullpath,
-                                String       prefix,
-                                File         manifestDir )
+    protected void packAntTar ( File               directory,
+                                File               archive,
+                                List<String>       includes,
+                                List<String>       excludes,
+                                boolean            failIfNotFound,
+                                String             fullpath,
+                                String             prefix,
+                                File               manifestDir,
+                                Collection<String> tarExtensions,
+                                Collection<String> tarGzExtensions )
     {
         /**
          * http://evgeny-goldin.org/javadoc/ant/Tasks/tar.html
@@ -156,7 +152,7 @@ final class FileBeanHelper
         def tarMap = [ destfile        : archive.canonicalPath,
                        defaultexcludes : 'no',
                        longfile        : 'gnu',
-                       compression     : tarCompression( fileBean.extension( archive )) ]
+                       compression     : tarCompression( fileBean.extension( archive ), tarExtensions, tarGzExtensions ) ]
 
         def tarFileSets = []
 
@@ -179,6 +175,26 @@ final class FileBeanHelper
         ant.tar( tarMap ) {
             tarFileSets.each { Map tarFileSetMap -> tarfileset ( tarFileSetMap ) }
             if ( manifestDir ) { tarfileset ( [ dir : manifestDir.canonicalPath ] )}
+        }
+    }
+
+
+    @SuppressWarnings([ 'GroovyMethodParameterCount' ])
+    @Requires({ directory.directory && archive })
+    @Ensures({ archive.file })
+    protected void packAntGz ( File         directory,
+                               File         archive,
+                               List<String> includes,
+                               List<String> excludes )
+    {
+        /**
+         * http://evgeny-goldin.org/javadoc/ant/Tasks/pack.html
+         */
+
+        ant.gzip([     destfile : archive.canonicalPath ]) {
+            fileset ([ dir      : directory.canonicalPath,
+                       includes : ( includes ?: [] ).join( ',' ),
+                       excludes : ( excludes ?: [] ).join( ',' ) ])
         }
     }
 

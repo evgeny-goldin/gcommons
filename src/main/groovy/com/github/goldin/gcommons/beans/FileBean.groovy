@@ -2,6 +2,7 @@ package com.github.goldin.gcommons.beans
 
 import static com.github.goldin.gcommons.GCommons.*
 import com.github.goldin.gcommons.truezip.TrueZip
+import com.google.common.collect.Sets
 import groovy.io.FileType
 import groovy.util.logging.Slf4j
 import org.apache.tools.ant.DirectoryScanner
@@ -28,7 +29,10 @@ class FileBean extends BaseBean
     Set<String> tarExtensions
 
     @SuppressWarnings ( 'StatelessClass' )
-    Set<String> gzipExtensions
+    Set<String> tarGzExtensions
+
+    @SuppressWarnings ( 'StatelessClass' )
+    Set<String> gzExtensions
 
     @SuppressWarnings ( 'StatelessClass' )
     Set<String> allExtensions
@@ -56,10 +60,71 @@ class FileBean extends BaseBean
          * user should have a full control over what's copied or packed
          */
         defaultExcludes.each { ant.defaultexcludes( remove : it ) }
-        zipExtensions  = TrueZip.zipExtensions()
-        tarExtensions  = TrueZip.tarExtensions()
-        gzipExtensions = [ 'gz' ] as Set
-        allExtensions  = ( zipExtensions + tarExtensions + gzipExtensions ) as Set
+        resetCustomArchiveFormats()
+    }
+
+
+    void resetCustomArchiveFormats()
+    {
+        setExtensions( TrueZip.zipExtensions(),
+                       TrueZip.tarExtensions(),
+                       TrueZip.tarGzExtensions(),
+                       [ 'gz' ])
+    }
+
+
+    @Requires({ formats })
+    void setCustomArchiveFormats ( Map<String, List<String>> formats )
+    {
+        final List<String> zip   = []
+        final List<String> tar   = []
+        final List<String> tarGz = []
+
+        formats.each {
+            String archiveFormat, List<String> extensions ->
+            assert archiveFormat && extensions
+
+            final updateExtensions = ( 'zip'    == archiveFormat ) ? zip   :
+                                     ( 'tar'    == archiveFormat ) ? tar   :
+                                     ( 'tar.gz' == archiveFormat ) ? tarGz :
+                                                                     null
+            assert ( updateExtensions != null ), \
+                   "Unrecognized custom archive format [$archiveFormat], " +
+                   "supported formats are 'zip', 'tar' and 'tar.gz'"
+
+            updateExtensions.addAll( extensions )
+        }
+
+        TrueZip.setCustomArchiveFormats( zip, tar, tarGz )
+        setExtensions( this.zipExtensions   + zip,
+                       this.tarExtensions   + tar,
+                       this.tarGzExtensions + tarGz,
+                       this.gzExtensions )
+    }
+
+
+    @SuppressWarnings([ 'GroovyOverlyComplexArithmeticExpression' ])
+    @Requires({ ( zipExtensions != null ) && ( tarExtensions != null ) && ( tarGzExtensions != null ) && ( gzExtensions != null ) })
+    private void setExtensions( Collection<String> zipExtensions,
+                                Collection<String> tarExtensions,
+                                Collection<String> tarGzExtensions,
+                                Collection<String> gzExtensions )
+    {
+        this.zipExtensions   = zipExtensions.toSet().asImmutable()
+        this.tarExtensions   = ( tarExtensions - tarGzExtensions ).toSet().asImmutable()
+        this.tarGzExtensions = tarGzExtensions.toSet().asImmutable()
+        this.gzExtensions    = gzExtensions.toSet().asImmutable()
+        this.allExtensions   = ( zipExtensions + tarExtensions + tarGzExtensions + gzExtensions ).toSet().asImmutable()
+
+        assert Sets.intersection( this.zipExtensions,   this.tarExtensions   ).empty
+        assert Sets.intersection( this.zipExtensions,   this.tarGzExtensions ).empty
+        assert Sets.intersection( this.zipExtensions,   this.gzExtensions    ).empty
+        assert Sets.intersection( this.tarExtensions,   this.tarGzExtensions ).empty
+        assert Sets.intersection( this.tarExtensions,   this.gzExtensions    ).empty
+        assert Sets.intersection( this.tarGzExtensions, this.gzExtensions    ).empty
+
+        log.info( "Extensions set: zip - ${ this.zipExtensions }, tar - ${ this.tarExtensions }, " +
+                  "tar.gz - ${ this.tarGzExtensions }, gz - ${ this.gzExtensions }" )
     }
 
 
@@ -365,6 +430,8 @@ class FileBean extends BaseBean
         final extension = extension( archive )
         final isZip     = zipExtensions.contains( extension )
         final isTar     = tarExtensions.contains( extension )
+        final isTarGz   = tarGzExtensions.contains( extension )
+        final isGz      = gzExtensions.contains( extension )
 
         assert allExtensions.contains( extension ), \
                "Packing [$archive] - unsupported archive extension \"$extension\", " +
@@ -383,7 +450,7 @@ class FileBean extends BaseBean
         {
             assert ( ! overwrite )
             final maxLastModified = files( directory, includes, excludes, false, false, failIfNotFound, true )*.lastModified().max()
-            if ( maxLastModified < archive.lastModified())
+            if (  maxLastModified < archive.lastModified())
             {
                 log.info( "Packing [$archive] is skipped - [$directory] doesn't contain newer files" )
                 return archive
@@ -406,15 +473,20 @@ class FileBean extends BaseBean
 
             if ( useTrueZip )
             {
+                assert ( ! isGz ), "TrueZip provides no support for packing .gz archives. Use .tar.gz or Ant"
                 helper.packTrueZip( directory, archive, includes, excludes, failIfNotFound, fullpath, prefix, manifestDir )
             }
             else if ( isZip )
             {
                 helper.packAntZip ( directory, archive, includes, excludes, failIfNotFound, fullpath, prefix, manifestDir, update, compressionLevel )
             }
-            else if ( isTar )
+            else if ( isTar || isTarGz )
             {
-                helper.packAntTar ( directory, archive, includes, excludes, failIfNotFound, fullpath, prefix, manifestDir )
+                helper.packAntTar ( directory, archive, includes, excludes, failIfNotFound, fullpath, prefix, manifestDir, tarExtensions, tarGzExtensions )
+            }
+            else if ( isGz )
+            {
+                helper.packAntGz ( directory, archive, includes, excludes )
             }
             else
             {
@@ -452,10 +524,10 @@ class FileBean extends BaseBean
                   File    destinationDirectory,
                   boolean useTrueZip = true )
     {
-        def time      = System.currentTimeMillis()
-        def archive   = sourceArchive.canonicalFile
-        def directory = destinationDirectory.canonicalFile
-        def extension = extension( archive )
+        final time      = System.currentTimeMillis()
+        final archive   = sourceArchive.canonicalFile
+        final directory = destinationDirectory.canonicalFile
+        final extension = extension( archive )
 
         assert allExtensions.contains( extension ), \
                "Unpacking [$archive] - unsupported archive extension \"$extension\", " +
@@ -469,6 +541,7 @@ class FileBean extends BaseBean
 
             if ( useTrueZip )
             {
+                assert ( ! gzExtensions.contains( extension )), "TrueZip provides no support for unpacking .gz archives. Use .tar.gz or Ant"
                 TrueZip.unpackArchive( archive, extension, directory )
             }
             else if ( zipExtensions.contains( extension ))
@@ -476,13 +549,13 @@ class FileBean extends BaseBean
                 ant.unzip( src  : archive.canonicalPath,
                            dest : directory.canonicalPath )
             }
-            else if ( tarExtensions.contains( extension ))
+            else if ( tarExtensions.contains( extension ) || tarGzExtensions.contains( extension ))
             {
                 ant.untar( src         : archive.canonicalPath,
                            dest        : directory.canonicalPath,
-                           compression : helper.tarCompression( extension ))
+                           compression : helper.tarCompression( extension, tarExtensions, tarGzExtensions ))
             }
-            else if ( gzipExtensions.contains( extension ))
+            else if ( gzExtensions.contains( extension ))
             {
                 ant.gunzip( src  : archive.canonicalPath,
                             dest : directory.canonicalPath )

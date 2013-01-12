@@ -1,12 +1,13 @@
 package com.github.goldin.gcommons.truezip
 
+import static com.github.goldin.gcommons.truezip.TrueZip.*
 import de.schlichtherle.io.DefaultArchiveDetector
 import de.schlichtherle.io.archive.spi.ArchiveDriver
 import org.gcontracts.annotations.Requires
 
 
 /**
- * {@link de.schlichtherle.io.DefaultArchiveDetector} extension detecting only the original archive.
+ * {@link DefaultArchiveDetector} extension detecting only the original archive.
  *
  * Used in {@link com.github.goldin.gcommons.beans.FileBean#unpack(File, File)} so that
  * only the original archive is processed by TrueZip and if archive being unpacked
@@ -17,15 +18,18 @@ import org.gcontracts.annotations.Requires
  */
 class SingleFileArchiveDetector extends DefaultArchiveDetector
 {
-    private final String archivePath
+    private final String                 archivePath
+    private final DefaultArchiveDetector delegate
 
 
     @SuppressWarnings([ 'GroovyUntypedAccess' ])
     @Requires({ archive.file && extension })
-    SingleFileArchiveDetector ( File archive, String extension )
+    SingleFileArchiveDetector ( File archive, String extension, DefaultArchiveDetector delegate = null )
     {
-        super( extension )
-        archivePath = archive.canonicalPath
+        super( '' )
+
+        this.archivePath = archive.canonicalPath
+        this.delegate    = delegate
     }
 
 
@@ -33,6 +37,9 @@ class SingleFileArchiveDetector extends DefaultArchiveDetector
     @Requires({ path })
     ArchiveDriver getArchiveDriver ( String path )
     {
-        ( new File( path ).canonicalPath == archivePath ) ? super.getArchiveDriver( path ) : null
+        final driver = ( new File( path ).canonicalPath == archivePath ) ?
+            (( delegate ? delegate.getArchiveDriver( path ) : getDefaultArchiveDriver( path ))) :
+            null
+        driver
     }
 }

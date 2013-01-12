@@ -54,6 +54,7 @@ dependencies {
                 "org.gcontracts:gcontracts-core:$gcontractsVersion",
                 "de.schlichtherle:truezip:$truezipVersion",
                 "org.slf4j:slf4j-api:$slf4jVersion",
+                "com.google.guava:guava:14.0-rc1",
                 'org.apache.commons:commons-exec:1.1',
                 'commons-net:commons-net:3.2'
 
