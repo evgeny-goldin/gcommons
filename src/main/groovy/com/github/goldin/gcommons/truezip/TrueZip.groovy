@@ -11,12 +11,8 @@ import org.gcontracts.annotations.Ensures
 import org.gcontracts.annotations.Requires
 
 
-
 /**
  * TrueZip library wrapper.
- *
- * Some calls catch NoClassDefFoundError thrown on Java 6:
- * http://stackoverflow.com/questions/14270141/truezip-7-requires-java-7-noclassdeffounderror-java-nio-file-path-on-java-6
  */
 final class TrueZip
 {
