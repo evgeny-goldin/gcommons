@@ -47,6 +47,15 @@ final class TrueZip
             assert ( ! JSE7.AVAILABLE )
             false
         }
+        catch ( IllegalArgumentException e )
+        {
+            if ( e.class.name == 'java.nio.file.InvalidPathException' )
+            {   // Should run on Java 6
+                return false
+            }
+
+            throw e
+        }
     }
 
 
