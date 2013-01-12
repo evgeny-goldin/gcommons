@@ -57,7 +57,7 @@ dependencies {
                 "de.schlichtherle.truezip:truezip-driver-tar:$truezipVersion",
                 "de.schlichtherle.truezip:truezip-kernel:$truezipVersion",
                 "de.schlichtherle.truezip:truezip-file:$truezipVersion",
-                "de.schlichtherle.truezip:truezip-swing:$truezipVersion",
+                "de.schlichtherle.truezip:truezip-swing:$truezipVersion", // Tests fail otherwise
                 "org.slf4j:slf4j-api:$slf4jVersion",
                 'org.apache.commons:commons-exec:1.1',
                 'commons-net:commons-net:3.2'

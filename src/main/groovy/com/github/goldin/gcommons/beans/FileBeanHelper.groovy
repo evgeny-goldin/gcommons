@@ -1,21 +1,15 @@
 package com.github.goldin.gcommons.beans
 
 import static com.github.goldin.gcommons.GCommons.*
-import de.schlichtherle.truezip.file.TFile
-import de.schlichtherle.truezip.file.TVFS
 import org.apache.tools.zip.ZipEntry
 import org.apache.tools.zip.ZipFile
-import de.schlichtherle.truezip.fs.FsDriverProvider
-import de.schlichtherle.truezip.file.TArchiveDetector
+import com.github.goldin.gcommons.truezip.TrueZip
 import org.gcontracts.annotations.Ensures
 import org.gcontracts.annotations.Requires
 
 
 /**
  * {@link FileBean} helper methods.
- *
- * Class is marked "final" as it's not meant for subclassing.
- * Methods are marked as "protected" to allow package-access only.
  */
 @SuppressWarnings( 'FinalClassWithProtectedMember' )
 final class FileBeanHelper
@@ -38,19 +32,6 @@ final class FileBeanHelper
      * @return packing tool name: Ant or TrueZip
      */
     protected String toolName ( boolean isTrueZip ) { isTrueZip ? 'TrueZip' : 'Ant' }
-
-
-    /**
-     * Retrieves extensions recognized by drivers specified.
-     * @param classes driver classes
-     * @return extensions recognized by drivers specified
-     */
-    @Requires({ classes })
-    @Ensures ({ result  })
-    protected Set<String> extensions ( Class<? extends FsDriverProvider> ... classes )
-    {
-        classes.collect { it.newInstance().get().keySet()*.toString() }.flatten()
-    }
 
 
     /**
@@ -80,6 +61,7 @@ final class FileBeanHelper
     }
 
 
+    @SuppressWarnings([ 'GroovyRangeTypeCheck', 'GroovyMethodParameterCount' ])
     @Requires({ directory.directory && archive && ( compressionLevel in ( 0 .. 9 )) })
     @Ensures({ archive.file })
     protected void packAntZip ( File         directory,
@@ -155,6 +137,7 @@ final class FileBeanHelper
     }
 
 
+    @SuppressWarnings([ 'GroovyMethodParameterCount' ])
     @Requires({ directory.directory && archive })
     @Ensures({ archive.file })
     protected void packAntTar ( File         directory,
@@ -200,21 +183,22 @@ final class FileBeanHelper
     }
 
 
+    @SuppressWarnings([ 'GroovyMethodParameterCount' ])
     @Requires({ directory.directory && archive })
-    @Ensures({ archive.file })
-    protected void packTrueZip ( File         directory,
-                                 File         archive,
-                                 List<String> includes,
-                                 List<String> excludes,
-                                 boolean      failIfNotFound,
-                                 String       fullpath,
-                                 String       prefix,
-                                 File         manifestDir )
+    @Ensures ({ archive.file || ( result == false ) })
+    protected boolean packTrueZip ( File         directory,
+                                    File         archive,
+                                    List<String> includes,
+                                    List<String> excludes,
+                                    boolean      failIfNotFound,
+                                    String       fullpath,
+                                    String       prefix,
+                                    File         manifestDir )
     {
         for ( File file in fileBean.files( directory, includes, excludes, false, false, failIfNotFound ))
         {
             final filePath = fullpath ?: ( prefix ?: '' ) + fileBean.relativePath( directory, file )
-            new TFile( file, TArchiveDetector.NULL ).cp_p( new TFile( archive, filePath ))
+            if ( ! TrueZip.addFileToArchive( file, filePath, archive )){ return false }
         }
 
         if ( manifestDir )
@@ -224,10 +208,11 @@ final class FileBeanHelper
 
             final manifestFile = verify().file( files.first())
             final manifestPath = fileBean.relativePath( manifestDir, manifestFile )
-            new TFile( manifestFile, TArchiveDetector.NULL ).cp_p( new TFile( archive, manifestPath ))
+            if ( ! TrueZip.addFileToArchive( manifestFile, manifestPath, archive )){ return false }
         }
 
-        TVFS.umount()
+        TrueZip.umount()
+        true
     }
 
 
@@ -251,8 +236,7 @@ final class FileBeanHelper
                                                   Set<String>    entriesExclude,
                                                   boolean        failIfNotFound )
     {
-        Closure<Boolean> isPatterned          = { it.contains( '?' ) || it.contains( '*' ) }
-
+        Closure<Boolean> isPatterned          = { String s -> s.contains( '?' ) || s.contains( '*' ) }
         Closure<Boolean> isEntryMatchPatterns = {
             boolean            matchIfEmpty,
             ZipEntry           entry,

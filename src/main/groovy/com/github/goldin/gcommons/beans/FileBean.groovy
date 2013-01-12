@@ -1,8 +1,7 @@
 package com.github.goldin.gcommons.beans
 
-
 import static com.github.goldin.gcommons.GCommons.*
-import com.github.goldin.gcommons.util.GCommonsFsDriverService
+import com.github.goldin.gcommons.truezip.TrueZip
 import groovy.io.FileType
 import groovy.util.logging.Slf4j
 import org.apache.tools.ant.DirectoryScanner
@@ -10,13 +9,7 @@ import org.apache.tools.ant.util.FileUtils
 import org.apache.tools.zip.ZipFile
 import org.gcontracts.annotations.Ensures
 import org.gcontracts.annotations.Requires
-import de.schlichtherle.truezip.file.TArchiveDetector
-import de.schlichtherle.truezip.fs.archive.zip.ZipDriverService
-import de.schlichtherle.truezip.fs.archive.tar.TarDriverService
-import de.schlichtherle.truezip.file.TFile
-import de.schlichtherle.truezip.file.TVFS
 import java.security.MessageDigest
-
 
 
 /**
@@ -63,8 +56,8 @@ class FileBean extends BaseBean
          * user should have a full control over what's copied or packed
          */
         defaultExcludes.each { ant.defaultexcludes( remove : it ) }
-        zipExtensions  = helper.extensions( ZipDriverService, GCommonsFsDriverService )
-        tarExtensions  = helper.extensions( TarDriverService )
+        zipExtensions  = TrueZip.zipExtensions()
+        tarExtensions  = TrueZip.tarExtensions()
         gzipExtensions = [ 'gz' ] as Set
         allExtensions  = ( zipExtensions + tarExtensions + gzipExtensions ) as Set
     }
@@ -179,6 +172,7 @@ class FileBean extends BaseBean
      *
      * @return files under base directory specified passing an inclusion/exclusion patterns
      */
+    @SuppressWarnings([ 'JavaStylePropertiesInvocation' ])
     @Requires({ directory.directory || ( ! failIfNotFound ) })
     @Ensures({ result || ( ! failIfNotFound ) })
     List<File> files ( File         directory,
@@ -192,7 +186,7 @@ class FileBean extends BaseBean
         List<File>       files           = []
         File             baseDirectory   = directory.canonicalFile
         DirectoryScanner scanner         = new DirectoryScanner()
-        List<String>     scannerIncludes = ( stripFileMode ? includes*.replaceFirst( /\|${ constants().FILEMODE }$/, '' ) : includes )
+        List<String>     scannerIncludes = ( stripFileMode ? includes*.replaceFirst( ~/\|${ constants().FILEMODE }$/, '' ) : includes )
         List<String>     scannerExcludes = excludes
 
         if ( directory.directory )
@@ -207,7 +201,7 @@ class FileBean extends BaseBean
 
                 scan()
 
-                files = includedFiles.collect { verify().file( [ new File( baseDirectory, it ).canonicalFile ] as File[] ) } +
+                files = ( List<File> ) includedFiles.collect { verify().file( [ new File( baseDirectory, it ).canonicalFile ] as File[] ) } +
                         ( includeDirectories ? includedDirectories.collect { verify().directory( [ new File ( baseDirectory, it ).canonicalFile ] as File[] ) } :
                                                [] )
             }
@@ -348,6 +342,7 @@ class FileBean extends BaseBean
      *
      * @return archive packed
      */
+    @SuppressWarnings([ 'GroovyMethodParameterCount' ])
     @Requires({ sourceDirectory.directory && destinationArchive })
     @Ensures({ result.file && ( result == destinationArchive ) && ( result.size() > 0 ) })
     File pack ( File         sourceDirectory,
@@ -364,12 +359,12 @@ class FileBean extends BaseBean
                 File         manifestDir      = null,
                 int          compressionLevel = 9 )
     {
-        def time      = System.currentTimeMillis()
-        def directory = sourceDirectory.canonicalFile
-        def archive   = destinationArchive.canonicalFile
-        def extension = extension( archive )
-        def isAntZip  = ( ! useTrueZip ) && zipExtensions.contains( extension )
-        def isAntTar  = ( ! useTrueZip ) && tarExtensions.contains( extension )
+        final time      = System.currentTimeMillis()
+        final directory = sourceDirectory.canonicalFile
+        final archive   = destinationArchive.canonicalFile
+        final extension = extension( archive )
+        final isZip     = zipExtensions.contains( extension )
+        final isTar     = tarExtensions.contains( extension )
 
         assert allExtensions.contains( extension ), \
                "Packing [$archive] - unsupported archive extension \"$extension\", " +
@@ -377,7 +372,7 @@ class FileBean extends BaseBean
 
         if ( update )
         {
-            assert isAntZip, "'update' operation is only provided for Zip archives packed by Ant"
+            assert ( isZip && ( ! useTrueZip )), "'update' operation is only provided for Zip archives packed by Ant"
             verify().file( archive )
         }
         else if ( overwrite )
@@ -407,17 +402,25 @@ class FileBean extends BaseBean
 
             log.info( "Packing [$directory$patterns] to [$archive] using ${ helper.toolName( useTrueZip )}" )
 
-            if ( isAntZip || isAntTar )
-            {   /**
-                 * Ant may do nothing when no files are matched, so we make sure
-                 * patterns specified *are* matched
-                 */
-                assert files( directory, includes, excludes, false, false, failIfNotFound, isAntTar )
-            }
+            assert files( directory, includes, excludes, false, false, failIfNotFound, isTar && ( ! useTrueZip ))
 
-            isAntZip ? helper.packAntZip ( directory, archive, includes, excludes, failIfNotFound, fullpath, prefix, manifestDir, update, compressionLevel ) :
-            isAntTar ? helper.packAntTar ( directory, archive, includes, excludes, failIfNotFound, fullpath, prefix, manifestDir ) :
-                       helper.packTrueZip( directory, archive, includes, excludes, failIfNotFound, fullpath, prefix, manifestDir )
+            // noinspection GroovyIfStatementWithTooManyBranches
+            if ( useTrueZip && helper.packTrueZip( directory, archive, includes, excludes, failIfNotFound, fullpath, prefix, manifestDir ))
+            {
+                // Good! TrueZip worked
+            }
+            else if ( isZip )
+            {
+                helper.packAntZip ( directory, archive, includes, excludes, failIfNotFound, fullpath, prefix, manifestDir, update, compressionLevel )
+            }
+            else if ( isTar )
+            {
+                helper.packAntTar ( directory, archive, includes, excludes, failIfNotFound, fullpath, prefix, manifestDir )
+            }
+            else
+            {
+                throw new RuntimeException( "Unrecognized archive [$archive]" )
+            }
 
             log.info( "[$directory$patterns] packed to [$archive] " +
                       "(${( System.currentTimeMillis() - time ).intdiv( 1000 )} sec)" )
@@ -465,10 +468,9 @@ class FileBean extends BaseBean
 
             log.info( "Unpacking [$archive] to [$directory] using ${ helper.toolName( useTrueZip )}" )
 
-            if ( useTrueZip )
+            if ( useTrueZip && TrueZip.unpackArchive( archive, directory ))
             {
-                TFile.cp_rp( new TFile( archive ), new TFile( directory ), TArchiveDetector.NULL )
-                TVFS.umount()
+                // Good! TrueZip worked
             }
             else if ( zipExtensions.contains( extension ))
             {
@@ -615,7 +617,7 @@ class FileBean extends BaseBean
     /**
      * {@code "File.metaClass.recurse"} wrapper - iterates directory recursively.
      *
-     * @param directory directory to iterate recursievly
+     * @param directory directory to iterate recursively
      * @param configs   configurations map
      * @param callback  callback to invoke
      */

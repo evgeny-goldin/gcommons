@@ -1,4 +1,4 @@
-package com.github.goldin.gcommons.util
+package com.github.goldin.gcommons.truezip
 
 import de.schlichtherle.truezip.fs.FsDriver
 import de.schlichtherle.truezip.fs.FsScheme
