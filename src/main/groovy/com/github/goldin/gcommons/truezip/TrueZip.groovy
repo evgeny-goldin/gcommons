@@ -39,7 +39,7 @@ final class TrueZip
         try
         {
             TFile.cp_rp( new TFile( sourceArchive ), new TFile( destinationDirectory ), TArchiveDetector.NULL )
-            TVFS.umount()
+            umount()
             true
         }
         catch ( NoClassDefFoundError ignored )
