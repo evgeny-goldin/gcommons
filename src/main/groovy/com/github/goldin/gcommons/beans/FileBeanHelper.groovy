@@ -186,19 +186,19 @@ final class FileBeanHelper
     @SuppressWarnings([ 'GroovyMethodParameterCount' ])
     @Requires({ directory.directory && archive })
     @Ensures ({ archive.file || ( result == false ) })
-    protected boolean packTrueZip ( File         directory,
-                                    File         archive,
-                                    List<String> includes,
-                                    List<String> excludes,
-                                    boolean      failIfNotFound,
-                                    String       fullpath,
-                                    String       prefix,
-                                    File         manifestDir )
+    protected void packTrueZip ( File         directory,
+                                 File         archive,
+                                 List<String> includes,
+                                 List<String> excludes,
+                                 boolean      failIfNotFound,
+                                 String       fullpath,
+                                 String       prefix,
+                                 File         manifestDir )
     {
         for ( File file in fileBean.files( directory, includes, excludes, false, false, failIfNotFound ))
         {
             final filePath = fullpath ?: ( prefix ?: '' ) + fileBean.relativePath( directory, file )
-            if ( ! TrueZip.addFileToArchive( file, filePath, archive )){ return false }
+            TrueZip.addFileToArchive( file, filePath, archive )
         }
 
         if ( manifestDir )
@@ -208,11 +208,10 @@ final class FileBeanHelper
 
             final manifestFile = verify().file( files.first())
             final manifestPath = fileBean.relativePath( manifestDir, manifestFile )
-            if ( ! TrueZip.addFileToArchive( manifestFile, manifestPath, archive )){ return false }
+            TrueZip.addFileToArchive( manifestFile, manifestPath, archive )
         }
 
         TrueZip.umount()
-        true
     }
 
 

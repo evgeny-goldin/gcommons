@@ -342,7 +342,7 @@ class FileBean extends BaseBean
      *
      * @return archive packed
      */
-    @SuppressWarnings([ 'GroovyMethodParameterCount' ])
+    @SuppressWarnings([ 'GroovyMethodParameterCount', 'GroovyIfStatementWithTooManyBranches' ])
     @Requires({ sourceDirectory.directory && destinationArchive })
     @Ensures({ result.file && ( result == destinationArchive ) && ( result.size() > 0 ) })
     File pack ( File         sourceDirectory,
@@ -404,10 +404,9 @@ class FileBean extends BaseBean
 
             assert files( directory, includes, excludes, false, false, failIfNotFound, isTar && ( ! useTrueZip ))
 
-            // noinspection GroovyIfStatementWithTooManyBranches
-            if ( useTrueZip && helper.packTrueZip( directory, archive, includes, excludes, failIfNotFound, fullpath, prefix, manifestDir ))
+            if ( useTrueZip )
             {
-                // Good! TrueZip worked
+                helper.packTrueZip( directory, archive, includes, excludes, failIfNotFound, fullpath, prefix, manifestDir )
             }
             else if ( isZip )
             {
@@ -468,9 +467,9 @@ class FileBean extends BaseBean
 
             log.info( "Unpacking [$archive] to [$directory] using ${ helper.toolName( useTrueZip )}" )
 
-            if ( useTrueZip && TrueZip.unpackArchive( archive, directory ))
+            if ( useTrueZip )
             {
-                // Good! TrueZip worked
+                TrueZip.unpackArchive( archive, extension, directory )
             }
             else if ( zipExtensions.contains( extension ))
             {

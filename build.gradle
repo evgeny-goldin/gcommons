@@ -22,7 +22,7 @@ final spockExtensionsVersion = '0.1.4'          // http://evgenyg.artifactoryonl
 final gcontractsVersion      = '1.2.10'         // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.gcontracts%22%20AND%20a%3A%22gcontracts-core%22
 final antVersion             = '1.8.4'          // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.apache.ant%22%20AND%20a%3A%22ant%22
 final springVersion          = '3.2.0.RELEASE'  // http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.springframework%22%20AND%20a%3A%22spring-core%22
-final truezipVersion         = '7.7.1'          // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22de.schlichtherle.truezip%22%20AND%20a%3A%22truezip-file%22
+final truezipVersion         = '6.8.4'          // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22de.schlichtherle%22%20AND%20a%3A%22truezip%22
 final slf4jVersion           = '1.7.2'          // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.slf4j%22%20AND%20a%3A%22slf4j-api%22
 final junitVersion           = '4.11'           // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22junit%22%20AND%20a%3A%22junit%22
 final guiceVersion           = '3.0'            // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.google.inject%22%20AND%20a%3A%22guice%22
@@ -52,12 +52,7 @@ dependencies {
     compile     "org.codehaus.groovy:groovy:$groovyVersion",
                 "org.codehaus.groovy:groovy-ant:$groovyVersion",
                 "org.gcontracts:gcontracts-core:$gcontractsVersion",
-                "de.schlichtherle.truezip:truezip-driver-tzp:$truezipVersion",
-                "de.schlichtherle.truezip:truezip-driver-zip:$truezipVersion",
-                "de.schlichtherle.truezip:truezip-driver-tar:$truezipVersion",
-                "de.schlichtherle.truezip:truezip-kernel:$truezipVersion",
-                "de.schlichtherle.truezip:truezip-file:$truezipVersion",
-                "de.schlichtherle.truezip:truezip-swing:$truezipVersion", // Tests fail otherwise
+                "de.schlichtherle:truezip:$truezipVersion",
                 "org.slf4j:slf4j-api:$slf4jVersion",
                 'org.apache.commons:commons-exec:1.1',
                 'commons-net:commons-net:3.2'
