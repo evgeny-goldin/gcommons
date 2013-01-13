@@ -29,6 +29,11 @@ final class TrueZip
         customFormatsArchiveDetector = new CustomFormatsArchiveDetector( zipExtensions, tarExtensions, tarGzExtensions )
     }
 
+    static void resetCustomArchiveFormats()
+    {
+        customFormatsArchiveDetector = null
+    }
+
 
     @Ensures ({ result })
     static Set<String> zipExtensions (){ driverExtensions( ZipDriver ) }

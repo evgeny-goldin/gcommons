@@ -66,6 +66,7 @@ class FileBean extends BaseBean
 
     void resetCustomArchiveFormats()
     {
+        TrueZip.resetCustomArchiveFormats()
         setArchiveExtensions( TrueZip.zipExtensions(),
                               TrueZip.tarExtensions(),
                               TrueZip.tarGzExtensions(),
