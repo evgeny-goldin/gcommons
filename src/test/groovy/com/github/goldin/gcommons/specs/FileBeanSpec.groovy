@@ -668,7 +668,8 @@ class FileBeanSpec extends BaseSpec
                     { fileBean.unpack ( tarGzAnt, unpack6, false )},
                     { fileBean.unpack ( zipAnt,   unpack4, true  )},
                     { fileBean.unpack ( tarAnt,   unpack5, true  )},
-                    { fileBean.unpack ( tarGzAnt, unpack6, true  )})
+                    { fileBean.unpack ( tarGzAnt, unpack6, true  )},
+                    { assert false })
     }
 
 
