@@ -83,11 +83,11 @@ class BaseSpec extends Specification
      * {@link GroovyTestCase} wrappers
      */
     @SuppressWarnings([ 'GroovyAccessibility' ])
-    @Requires({ callback && errorClass })
-    @Ensures ({ result != null })
-    protected String shouldFail ( Closure callback, Class errorClass = AssertionError )
+    @Requires({ errorClass && callbacks })
+    @Ensures ({ result })
+    protected List<String> shouldFail ( Class errorClass = AssertionError, Closure ... callbacks )
     {
-        new GroovyTestCase().shouldFail( errorClass, callback )
+        callbacks.collect { new GroovyTestCase().shouldFail( errorClass, it )}
     }
 
 

@@ -78,8 +78,8 @@ class FileBeanSpec extends BaseSpec
         verifyBean.equal( extUnpack1, extUnpack2 )
         verifyBean.equal( extUnpack2, zipUnpack1 )
 
-        shouldFail{ fileBean.pack  ( zipUnpack1, fooFile )}.contains( 'unsupported archive extension "foo"' )
-        shouldFail{ fileBean.unpack( fooFile, zipUnpack1 )}.contains( 'unsupported archive extension "foo"' )
+        shouldFail{ fileBean.pack  ( zipUnpack1, fooFile )}.first().contains( 'unsupported archive extension "foo"' )
+        shouldFail{ fileBean.unpack( fooFile, zipUnpack1 )}.first().contains( 'unsupported archive extension "foo"' )
 
         where:
         [ testArchive, extension ] << [ testArchives(), TEST_EXTENSIONS ].combinations()
@@ -411,9 +411,8 @@ class FileBeanSpec extends BaseSpec
 
         verifyBean.equal( unpack3, unpack6 )
 
-        shouldFail { fileBean.unpackZipEntries( zipFile, unpack1, [ "$testArchive/lib/maven-core-3.0.1.jar" ], [ "$testArchive/lib/maven-core-3.0.1.jar" ] )}
-        shouldFail { fileBean.unpackZipEntries( zipFile, unpack1, [ '**/*.bat' ], [ '**/m*'   ] )}
-
+        shouldFail ({ fileBean.unpackZipEntries( zipFile, unpack1, [ "$testArchive/lib/maven-core-3.0.1.jar" ], [ "$testArchive/lib/maven-core-3.0.1.jar" ] )},
+                    { fileBean.unpackZipEntries( zipFile, unpack1, [ '**/*.bat' ], [ '**/m*'   ] )})
         where:
         testArchive << [ MAVEN_TEST_RESOURCE ]
     }
@@ -464,9 +463,9 @@ class FileBeanSpec extends BaseSpec
 
         verifyBean.equal( unpack4, unpack8 )
 
-        shouldFail { fileBean.unpackZipEntries( zipFile, unpack1, [ '**/*.html' ],       [ '**/*.html'     ] )}
-        shouldFail { fileBean.unpackZipEntries( zipFile, unpack1, [ '**/*.groovy' ],     [ '**/*r*'        ] )}
-        shouldFail { fileBean.unpackZipEntries( zipFile, unpack1, [ '**/build.gradle' ], [ '**/samples/**' ] )}
+        shouldFail ({ fileBean.unpackZipEntries( zipFile, unpack1, [ '**/*.html' ],       [ '**/*.html'     ] )},
+                    { fileBean.unpackZipEntries( zipFile, unpack1, [ '**/*.groovy' ],     [ '**/*r*'        ] )},
+                    { fileBean.unpackZipEntries( zipFile, unpack1, [ '**/build.gradle' ], [ '**/samples/**' ] )})
 
         where:
         testArchive << [ GRADLE_TEST_RESOURCE ]
@@ -494,8 +493,8 @@ class FileBeanSpec extends BaseSpec
         fileBean.recurse( testDir, [ type: FileType.FILES       ], { File f -> assert f.file      }).every { File f -> f.file      }
         fileBean.recurse( testDir, [ type: FileType.DIRECTORIES ], { File f -> assert f.directory }).every { File f -> f.directory }
 
-        shouldFail { fileBean.recurse( testDir, [ something: 'anything' ], {} )}
-        shouldFail { fileBean.recurse( testDir, [ tyype    : 'typo'     ], {} )}
+        shouldFail ({ fileBean.recurse( testDir, [ something: 'anything' ], {} )},
+                    { fileBean.recurse( testDir, [ tyype    : 'typo'     ], {} )})
     }
 
 
@@ -563,9 +562,9 @@ class FileBeanSpec extends BaseSpec
         zip1.size() > zip2.size()
         zip2.size() > zip3.size()
 
-        shouldFail { fileBean.pack( unpackDir, zip4, [ '**' ], [], false, true, false, null, null, null, true, null, -1 ) }
-        shouldFail { fileBean.pack( unpackDir, zip4, [ '**' ], [], false, true, false, null, null, null, true, null, 10 ) }
-        shouldFail { shouldFail { fileBean.pack( unpackDir, zip4, [ '**' ], [], false, true, false, null, null, null, true, null, 5 ) }}
+        shouldFail ({ fileBean.pack( unpackDir, zip4, [ '**' ], [], false, true, false, null, null, null, true, null, -1 ) },
+                    { fileBean.pack( unpackDir, zip4, [ '**' ], [], false, true, false, null, null, null, true, null, 10 ) },
+                    { shouldFail { fileBean.pack( unpackDir, zip4, [ '**' ], [], false, true, false, null, null, null, true, null, 5 ) }})
 
         where:
         testArchive << testArchives().keySet()
@@ -657,6 +656,19 @@ class FileBeanSpec extends BaseSpec
         verifyBean.equal( unpack5, unpack6 )
 
         fileBean.resetCustomArchiveFormats()
+
+        shouldFail ({ fileBean.pack( unpack1, zipAnt,       null, null, false )},
+                    { fileBean.pack( unpack2, tarAnt,       null, null, false )},
+                    { fileBean.pack( unpack3, tarGzAnt,     null, null, false )},
+                    { fileBean.pack( unpack1, zipTrueZip,   null, null, true  )},
+                    { fileBean.pack( unpack2, tarTrueZip,   null, null, true  )},
+                    { fileBean.pack( unpack3, tarGzTrueZip, null, null, true  )},
+                    { fileBean.unpack ( zipAnt,   unpack4, false )},
+                    { fileBean.unpack ( tarAnt,   unpack5, false )},
+                    { fileBean.unpack ( tarGzAnt, unpack6, false )},
+                    { fileBean.unpack ( zipAnt,   unpack4, true  )},
+                    { fileBean.unpack ( tarAnt,   unpack5, true  )},
+                    { fileBean.unpack ( tarGzAnt, unpack6, true  )})
     }
 
 
@@ -667,9 +679,9 @@ class FileBeanSpec extends BaseSpec
         final tar          = new File( testDir, 'testResource.tar' )
         final tarGz        = new File( testDir, 'testResource.tar.gz' )
 
-        shouldFail { fileBean.pack( testResource.parentFile, tar,   [ "${ testResource.name }|777" ], null, true  )}
-        shouldFail { fileBean.pack( testResource.parentFile, tar,   [ "${ testResource.name }|333" ], null, true  )}
-        shouldFail { fileBean.pack( testResource.parentFile, tarGz, [ "${ testResource.name }|555" ], null, true  )}
+        shouldFail ({ fileBean.pack( testResource.parentFile, tar,   [ "${ testResource.name }|777" ], null, true  )},
+                    { fileBean.pack( testResource.parentFile, tar,   [ "${ testResource.name }|333" ], null, true  )},
+                    { fileBean.pack( testResource.parentFile, tarGz, [ "${ testResource.name }|555" ], null, true  )})
 
         fileBean.pack( testResource.parentFile, tar,   [ "${ testResource.name }|555" ], null, false )
         fileBean.pack( testResource.parentFile, tarGz, [ "${ testResource.name }|777" ], null, false )
