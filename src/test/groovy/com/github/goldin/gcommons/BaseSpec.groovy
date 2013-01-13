@@ -83,22 +83,11 @@ class BaseSpec extends Specification
      * {@link GroovyTestCase} wrappers
      */
     @SuppressWarnings([ 'GroovyAccessibility' ])
-    @Requires({ c })
+    @Requires({ callback && errorClass })
     @Ensures ({ result != null })
-    protected String shouldFailAssert ( Closure c ) { new GroovyTestCase().shouldFail( AssertionError, c ) }
-
-
-    /**
-     * Retrieves test dir to be used for temporal output
-     * @param dirName test directory name
-     * @return test directory to use
-     */
-    @Requires({ testName })
-    @Ensures({ result.directory && ( ! result.listFiles()) })
-    protected File testDir( String testName )
+    protected String shouldFail ( Closure callback, Class errorClass = AssertionError )
     {
-        assert testName
-        fileBean.mkdirs( fileBean.delete( new File( "build/test/${ this.class.name }/$testName" ).canonicalFile ))
+        new GroovyTestCase().shouldFail( errorClass, callback )
     }
 
 

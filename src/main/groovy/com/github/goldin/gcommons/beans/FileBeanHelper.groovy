@@ -156,14 +156,14 @@ final class FileBeanHelper
 
         def tarFileSets = []
 
-        if ( includes.any { it ==~ /^.+\|${ constants().FILEMODE }$/ })
+        if ( includes.any { it ==~ /^.+\|${ constants().FILEMODE_PATTERN }$/ })
         {
             tarFileSets = includes.collect {
                 String expression ->
                 /**
                  * Splitting expression ('*.sh|755' or '*.sh') to include pattern and possible filemode (null if not used)
                  */
-                def ( String include, String filemode ) = expression.findAll( ~/^(.+?)(\|(${ constants().FILEMODE }))?$/ ){ it[ 1, 3 ] }[ 0 ]
+                def ( String include, String filemode ) = expression.findAll( ~/^(.+?)(\|(${ constants().FILEMODE_PATTERN }))?$/ ){ it[ 1, 3 ] }[ 0 ]
                 tarFileSetMap( directory, [ include ], excludes, failIfNotFound, fullpath, prefix, filemode )
             }
         }

@@ -66,10 +66,10 @@ class FileBean extends BaseBean
 
     void resetCustomArchiveFormats()
     {
-        setExtensions( TrueZip.zipExtensions(),
-                       TrueZip.tarExtensions(),
-                       TrueZip.tarGzExtensions(),
-                       [ 'gz' ])
+        setArchiveExtensions( TrueZip.zipExtensions(),
+                              TrueZip.tarExtensions(),
+                              TrueZip.tarGzExtensions(),
+                              [ 'gz' ])
     }
 
 
@@ -96,34 +96,35 @@ class FileBean extends BaseBean
         }
 
         TrueZip.setCustomArchiveFormats( zip, tar, tarGz )
-        setExtensions( this.zipExtensions   + zip,
-                       this.tarExtensions   + tar,
-                       this.tarGzExtensions + tarGz,
-                       this.gzExtensions )
+        setArchiveExtensions( this.zipExtensions   + zip,
+                              this.tarExtensions   + tar,
+                              this.tarGzExtensions + tarGz,
+                              this.gzExtensions )
     }
 
 
     @SuppressWarnings([ 'GroovyOverlyComplexArithmeticExpression' ])
     @Requires({ ( zipExtensions != null ) && ( tarExtensions != null ) && ( tarGzExtensions != null ) && ( gzExtensions != null ) })
-    private void setExtensions( Collection<String> zipExtensions,
-                                Collection<String> tarExtensions,
-                                Collection<String> tarGzExtensions,
-                                Collection<String> gzExtensions )
+    private void setArchiveExtensions ( Collection<String> zipExtensions,
+                                        Collection<String> tarExtensions,
+                                        Collection<String> tarGzExtensions,
+                                        Collection<String> gzExtensions )
     {
         this.zipExtensions   = zipExtensions.toSet().asImmutable()
         this.tarExtensions   = ( tarExtensions - tarGzExtensions ).toSet().asImmutable()
         this.tarGzExtensions = tarGzExtensions.toSet().asImmutable()
         this.gzExtensions    = gzExtensions.toSet().asImmutable()
         this.allExtensions   = ( zipExtensions + tarExtensions + tarGzExtensions + gzExtensions ).toSet().asImmutable()
+        final noIntersection = { Set s1, Set s2 -> Sets.intersection( s1, s2 ).empty }
 
-        assert Sets.intersection( this.zipExtensions,   this.tarExtensions   ).empty
-        assert Sets.intersection( this.zipExtensions,   this.tarGzExtensions ).empty
-        assert Sets.intersection( this.zipExtensions,   this.gzExtensions    ).empty
-        assert Sets.intersection( this.tarExtensions,   this.tarGzExtensions ).empty
-        assert Sets.intersection( this.tarExtensions,   this.gzExtensions    ).empty
-        assert Sets.intersection( this.tarGzExtensions, this.gzExtensions    ).empty
+        assert noIntersection( this.zipExtensions,   this.tarExtensions   )
+        assert noIntersection( this.zipExtensions,   this.tarGzExtensions )
+        assert noIntersection( this.zipExtensions,   this.gzExtensions    )
+        assert noIntersection( this.tarExtensions,   this.tarGzExtensions )
+        assert noIntersection( this.tarExtensions,   this.gzExtensions    )
+        assert noIntersection( this.tarGzExtensions, this.gzExtensions    )
 
-        log.info( "Extensions set: zip - ${ this.zipExtensions }, tar - ${ this.tarExtensions }, " +
+        log.info( "FileBean archive extensions set: zip - ${ this.zipExtensions }, tar - ${ this.tarExtensions }, " +
                   "tar.gz - ${ this.tarGzExtensions }, gz - ${ this.gzExtensions }" )
     }
 
@@ -251,7 +252,7 @@ class FileBean extends BaseBean
         List<File>       files           = []
         File             baseDirectory   = directory.canonicalFile
         DirectoryScanner scanner         = new DirectoryScanner()
-        List<String>     scannerIncludes = ( stripFileMode ? includes*.replaceFirst( ~/\|${ constants().FILEMODE }$/, '' ) : includes )
+        List<String>     scannerIncludes = ( stripFileMode ? includes*.replaceFirst( ~/\|${ constants().FILEMODE_PATTERN }$/, '' ) : includes )
         List<String>     scannerExcludes = excludes
 
         if ( directory.directory )
@@ -428,9 +429,9 @@ class FileBean extends BaseBean
         final directory = sourceDirectory.canonicalFile
         final archive   = destinationArchive.canonicalFile
         final extension = extension( archive )
+        final isAnt     = ( ! useTrueZip )
         final isZip     = zipExtensions.contains( extension )
-        final isTar     = tarExtensions.contains( extension )
-        final isTarGz   = tarGzExtensions.contains( extension )
+        final isTar     = tarExtensions.contains( extension ) || tarGzExtensions.contains( extension )
         final isGz      = gzExtensions.contains( extension )
 
         assert allExtensions.contains( extension ), \
@@ -439,7 +440,7 @@ class FileBean extends BaseBean
 
         if ( update )
         {
-            assert ( isZip && ( ! useTrueZip )), "'update' operation is only provided for Zip archives packed by Ant"
+            assert ( isZip && isAnt ), "'update' operation is only provided for Zip archives packed by Ant"
             verify().file( archive )
         }
         else if ( overwrite )
@@ -469,7 +470,7 @@ class FileBean extends BaseBean
 
             log.info( "Packing [$directory$patterns] to [$archive] using ${ helper.toolName( useTrueZip )}" )
 
-            assert files( directory, includes, excludes, false, false, failIfNotFound, isTar && ( ! useTrueZip ))
+            assert files( directory, includes, excludes, false, false, failIfNotFound, isTar )
 
             if ( useTrueZip )
             {
@@ -480,7 +481,7 @@ class FileBean extends BaseBean
             {
                 helper.packAntZip ( directory, archive, includes, excludes, failIfNotFound, fullpath, prefix, manifestDir, update, compressionLevel )
             }
-            else if ( isTar || isTarGz )
+            else if ( isTar )
             {
                 helper.packAntTar ( directory, archive, includes, excludes, failIfNotFound, fullpath, prefix, manifestDir, tarExtensions, tarGzExtensions )
             }

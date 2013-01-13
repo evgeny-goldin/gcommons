@@ -78,8 +78,8 @@ class FileBeanSpec extends BaseSpec
         verifyBean.equal( extUnpack1, extUnpack2 )
         verifyBean.equal( extUnpack2, zipUnpack1 )
 
-        shouldFailAssert{ fileBean.pack  ( zipUnpack1, fooFile )}.contains( 'unsupported archive extension "foo"' )
-        shouldFailAssert{ fileBean.unpack( fooFile, zipUnpack1 )}.contains( 'unsupported archive extension "foo"' )
+        shouldFail{ fileBean.pack  ( zipUnpack1, fooFile )}.contains( 'unsupported archive extension "foo"' )
+        shouldFail{ fileBean.unpack( fooFile, zipUnpack1 )}.contains( 'unsupported archive extension "foo"' )
 
         where:
         [ testArchive, extension ] << [ testArchives(), TEST_EXTENSIONS ].combinations()
@@ -130,7 +130,7 @@ class FileBeanSpec extends BaseSpec
         verifyBean.file( new File( extUnpack3, fullpath ))
         verifyBean.file( new File( extUnpack4, fullpath ))
 
-        shouldFailAssert { fileBean.pack( zipUnpack, extFile1, [ '**' ], [], false, true, false, [], fullpath, prefix )}
+        shouldFail { fileBean.pack( zipUnpack, extFile1, [ '**' ], [], false, true, false, [], fullpath, prefix )}
 
         where:
         [ testArchive, extension, prefix, fullpath ] << [ testArchives(), TEST_EXTENSIONS, [ 'prefix-1/22/333' ], [ 'fullpath-1/22/333.txt' ]].
@@ -164,7 +164,7 @@ class FileBeanSpec extends BaseSpec
             generalBean.execute( "tar -xzf $archiveFile -C $unpackDir" )
             verifyBean.file( shellFileUnpacked )
             verifyBean.file(( testFiles - '4.php' ).collect { new File( unpackDir, it ) } as File[] )
-            shouldFailAssert { verifyBean.file( new File( unpackDir, '4.php' ))}
+            shouldFail { verifyBean.file( new File( unpackDir, '4.php' ))}
 
             result = generalBean.executeWithResult( "bash  $shellFileUnpacked" )
             ls     = generalBean.executeWithResult( "ls -l $shellFileUnpacked" )
@@ -317,7 +317,7 @@ class FileBeanSpec extends BaseSpec
         ! noTestsFiles.any { it.name.with{ contains( 'Test' ) || contains( 'Spec' ) }}
         noTestsFiles.every { it.name.with{ endsWith( '.groovy' ) || endsWith( '.class' ) }}
 
-        shouldFailAssert { fileBean.files( buildDir, ['**/*.noSuchThing'] )}
+        shouldFail { fileBean.files( buildDir, ['**/*.noSuchThing'] )}
 
         randomFiles.each { verifyBean.file( it ) && it.name.endsWith( '.txt' )}
         ( randomFiles.size() <= randomN ) && ( randomFilesD.size() >= randomN )
@@ -411,8 +411,8 @@ class FileBeanSpec extends BaseSpec
 
         verifyBean.equal( unpack3, unpack6 )
 
-        shouldFailAssert { fileBean.unpackZipEntries( zipFile, unpack1, [ "$testArchive/lib/maven-core-3.0.1.jar" ], [ "$testArchive/lib/maven-core-3.0.1.jar" ] )}
-        shouldFailAssert { fileBean.unpackZipEntries( zipFile, unpack1, [ '**/*.bat' ], [ '**/m*'   ] )}
+        shouldFail { fileBean.unpackZipEntries( zipFile, unpack1, [ "$testArchive/lib/maven-core-3.0.1.jar" ], [ "$testArchive/lib/maven-core-3.0.1.jar" ] )}
+        shouldFail { fileBean.unpackZipEntries( zipFile, unpack1, [ '**/*.bat' ], [ '**/m*'   ] )}
 
         where:
         testArchive << [ MAVEN_TEST_RESOURCE ]
@@ -464,9 +464,9 @@ class FileBeanSpec extends BaseSpec
 
         verifyBean.equal( unpack4, unpack8 )
 
-        shouldFailAssert { fileBean.unpackZipEntries( zipFile, unpack1, [ '**/*.html' ],       [ '**/*.html'     ] )}
-        shouldFailAssert { fileBean.unpackZipEntries( zipFile, unpack1, [ '**/*.groovy' ],     [ '**/*r*'        ] )}
-        shouldFailAssert { fileBean.unpackZipEntries( zipFile, unpack1, [ '**/build.gradle' ], [ '**/samples/**' ] )}
+        shouldFail { fileBean.unpackZipEntries( zipFile, unpack1, [ '**/*.html' ],       [ '**/*.html'     ] )}
+        shouldFail { fileBean.unpackZipEntries( zipFile, unpack1, [ '**/*.groovy' ],     [ '**/*r*'        ] )}
+        shouldFail { fileBean.unpackZipEntries( zipFile, unpack1, [ '**/build.gradle' ], [ '**/samples/**' ] )}
 
         where:
         testArchive << [ GRADLE_TEST_RESOURCE ]
@@ -494,8 +494,8 @@ class FileBeanSpec extends BaseSpec
         fileBean.recurse( testDir, [ type: FileType.FILES       ], { File f -> assert f.file      }).every { File f -> f.file      }
         fileBean.recurse( testDir, [ type: FileType.DIRECTORIES ], { File f -> assert f.directory }).every { File f -> f.directory }
 
-        shouldFailAssert { fileBean.recurse( testDir, [ something: 'anything' ], {} )}
-        shouldFailAssert { fileBean.recurse( testDir, [ tyype    : 'typo'     ], {} )}
+        shouldFail { fileBean.recurse( testDir, [ something: 'anything' ], {} )}
+        shouldFail { fileBean.recurse( testDir, [ tyype    : 'typo'     ], {} )}
     }
 
 
@@ -563,9 +563,9 @@ class FileBeanSpec extends BaseSpec
         zip1.size() > zip2.size()
         zip2.size() > zip3.size()
 
-        shouldFailAssert { fileBean.pack( unpackDir, zip4, [ '**' ], [], false, true, false, null, null, null, true, null, -1 ) }
-        shouldFailAssert { fileBean.pack( unpackDir, zip4, [ '**' ], [], false, true, false, null, null, null, true, null, 10 ) }
-        shouldFailAssert { shouldFailAssert { fileBean.pack( unpackDir, zip4, [ '**' ], [], false, true, false, null, null, null, true, null, 5 ) }}
+        shouldFail { fileBean.pack( unpackDir, zip4, [ '**' ], [], false, true, false, null, null, null, true, null, -1 ) }
+        shouldFail { fileBean.pack( unpackDir, zip4, [ '**' ], [], false, true, false, null, null, null, true, null, 10 ) }
+        shouldFail { shouldFail { fileBean.pack( unpackDir, zip4, [ '**' ], [], false, true, false, null, null, null, true, null, 5 ) }}
 
         where:
         testArchive << testArchives().keySet()
@@ -657,5 +657,22 @@ class FileBeanSpec extends BaseSpec
         verifyBean.equal( unpack5, unpack6 )
 
         fileBean.resetCustomArchiveFormats()
+    }
+
+
+    def 'pl-466: Support "filemode" for tar.gz archives' ()
+    {
+        given:
+        final testResource = testResource( 'testResource.txt' )
+        final tar          = new File( testDir, 'testResource.tar' )
+        final tarGz        = new File( testDir, 'testResource.tar.gz' )
+
+        shouldFail { fileBean.pack( testResource.parentFile, tar,   [ "${ testResource.name }|777" ], null, true  )}
+        shouldFail { fileBean.pack( testResource.parentFile, tar,   [ "${ testResource.name }|333" ], null, true  )}
+        shouldFail { fileBean.pack( testResource.parentFile, tarGz, [ "${ testResource.name }|555" ], null, true  )}
+
+        fileBean.pack( testResource.parentFile, tar,   [ "${ testResource.name }|555" ], null, false )
+        fileBean.pack( testResource.parentFile, tarGz, [ "${ testResource.name }|777" ], null, false )
+        fileBean.pack( testResource.parentFile, tarGz, [ "${ testResource.name }|333" ], null, false )
     }
 }
