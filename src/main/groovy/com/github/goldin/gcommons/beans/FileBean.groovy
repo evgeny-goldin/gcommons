@@ -125,8 +125,11 @@ class FileBean extends BaseBean
         assert noIntersection( this.tarExtensions,   this.gzExtensions    )
         assert noIntersection( this.tarGzExtensions, this.gzExtensions    )
 
-        log.info( "FileBean archive extensions set: zip - ${ this.zipExtensions }, tar - ${ this.tarExtensions }, " +
-                  "tar.gz - ${ this.tarGzExtensions }, gz - ${ this.gzExtensions }" )
+        if ( log.debugEnabled )
+        {
+            log.debug( "FileBean archive extensions set: zip - ${ this.zipExtensions }, tar - ${ this.tarExtensions }, " +
+                       "tar.gz - ${ this.tarGzExtensions }, gz - ${ this.gzExtensions }" )
+        }
     }
 
 
