@@ -16,7 +16,7 @@ defaultTasks 'duplicates', 'clean', 'codenarc', 'build', 'install'
 sourceCompatibility          = 1.6
 group                        = 'com.github.goldin'
 
-final groovyVersion          = '2.1.0-rc-3'     // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.codehaus.groovy%22%20AND%20a%3A%22groovy%22
+final groovyVersion          = '2.1.0'          // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.codehaus.groovy%22%20AND%20a%3A%22groovy%22
 final spockVersion           = '0.7-groovy-2.0' // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.spockframework%22%20AND%20a%3A%22spock-core%22
 final spockExtensionsVersion = '0.1.4'          // http://evgenyg.artifactoryonline.com/evgenyg/repo/com/github/goldin/spock-extensions/
 final gcontractsVersion      = '1.2.10'         // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.gcontracts%22%20AND%20a%3A%22gcontracts-core%22
