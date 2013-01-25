@@ -46,8 +46,6 @@ configurations {
 }
 
 dependencies {
-    groovy      "org.codehaus.groovy:groovy:$groovyVersion"
-
     compile     "org.codehaus.groovy:groovy-all:$groovyVersion",
                 "org.gcontracts:gcontracts-core:$gcontractsVersion",
                 "de.schlichtherle:truezip:$truezipVersion",
