@@ -48,8 +48,7 @@ configurations {
 dependencies {
     groovy      "org.codehaus.groovy:groovy:$groovyVersion"
 
-    compile     "org.codehaus.groovy:groovy:$groovyVersion",
-                "org.codehaus.groovy:groovy-ant:$groovyVersion",
+    compile     "org.codehaus.groovy:groovy-all:$groovyVersion",
                 "org.gcontracts:gcontracts-core:$gcontractsVersion",
                 "de.schlichtherle:truezip:$truezipVersion",
                 "org.slf4j:slf4j-api:$slf4jVersion",
@@ -78,8 +77,7 @@ dependencies {
 
     runtime     "org.apache.ant:ant-commons-net:$antVersion"
 
-    testCompile "org.codehaus.groovy:groovy-test:$groovyVersion",
-                "junit:junit:$junitVersion"
+    testCompile "junit:junit:$junitVersion"
 
     testCompile ( "com.github.goldin:spock-extensions:$spockExtensionsVersion" ){
        exclude group: 'org.codehaus.groovy'
