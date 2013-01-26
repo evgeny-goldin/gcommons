@@ -1,5 +1,6 @@
 package com.github.goldin.gcommons.beans
 
+
 /**
  * Base class for other beans, provides reusable functionality for all of them.
  */
@@ -16,5 +17,5 @@ class BaseBean
      * @param objects array of objects
      * @return first element in the array specified, or <code>null</code> if it si empty
      */
-    protected <T> T first( T[] objects ) { objects.size() ? objects[ 0 ] : null }
+    protected <T> T first( T[] objects ) { objects ? objects.first() : null }
 }
