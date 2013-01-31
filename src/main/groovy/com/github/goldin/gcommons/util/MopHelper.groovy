@@ -196,18 +196,21 @@ class MopHelper extends BaseBean
             return files
         }
 
-        for ( File f in directory.listFiles().findAll { it.exists() })
+        for ( File f in directory.listFiles())
         {
-            def result = invokeCallback( f, callback, config )
-
-            if ( config.returnList && result.wasCalled ) { files << f }
-
-            def recursiveInvoke = ( f.directory  &&
-                                    (( ! config.stopOnFilter ) || ( config.filterType != FileType.DIRECTORIES ) || ( result.filterPass )) &&
-                                    (( ! config.stopOnFalse  ) || ( result.invocationResult )))
-            if ( recursiveInvoke )
+            if ( f.exists()) // May have disappeared since the directory was listed
             {
-                files.addAll( handleDirectory( f, callback, config, directories ))
+                def result = invokeCallback( f, callback, config )
+
+                if ( config.returnList && result.wasCalled ) { files << f }
+
+                def recursiveInvoke = ( f.directory  &&
+                                        (( ! config.stopOnFilter ) || ( config.filterType != FileType.DIRECTORIES ) || ( result.filterPass )) &&
+                                        (( ! config.stopOnFalse  ) || ( result.invocationResult )))
+                if ( recursiveInvoke )
+                {
+                    files.addAll( handleDirectory( f, callback, config, directories ))
+                }
             }
         }
 
@@ -226,16 +229,14 @@ class MopHelper extends BaseBean
      *
      * @return callback invocation result
      */
+    @Requires({ callbackFile.exists() && callback && config })
     private InvocationResult invokeCallback ( File          callbackFile,
                                               Closure<?>    callback,
                                               RecurseConfig config )
     {
-        verify().exists( callbackFile )
-        verify().notNull( callback, config )
-
-        def fileTypeMatch       = file().typeMatch( config.fileType,   callbackFile )
-        def filterTypeMatch     = file().typeMatch( config.filterType, callbackFile )
-        def result              = new InvocationResult()
+        final fileTypeMatch     = file().typeMatch( config.fileType,   callbackFile )
+        final filterTypeMatch   = file().typeMatch( config.filterType, callbackFile )
+        final result            = new InvocationResult()
         result.filterPass       = (( config.filter == null ) || ( ! filterTypeMatch ) || config.filter( callbackFile ))
         result.invocationResult = true
         result.wasCalled        = false
