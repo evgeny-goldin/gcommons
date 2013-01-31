@@ -196,7 +196,7 @@ class MopHelper extends BaseBean
             return files
         }
 
-        for ( File f in directory.listFiles())
+        for ( File f in directory.listFiles().findAll { it.exists() })
         {
             def result = invokeCallback( f, callback, config )
 
