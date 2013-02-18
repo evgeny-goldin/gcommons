@@ -33,7 +33,7 @@ class AlgorithmsTest extends BaseTest
          [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]],
         [[1, 3, 6, 43, 12, 78, 123, -98, -23, 0, 0, 2, 4, 5, 78, 93 ],
          [-98, -23, 0, 0, 1, 2, 3, 4, 5, 6, 12, 43, 78, 78, 93, 123]]
-    ]
+    ] as List<List<int[]>>
 
 
     /**
@@ -59,6 +59,7 @@ class AlgorithmsTest extends BaseTest
     }
 
 
+    @SuppressWarnings([ 'AssignCollectionSort' ])
     private void applySort( SortOption option )
     {
         log.info( "Testing --== [$option] ==-- sorting method" )
