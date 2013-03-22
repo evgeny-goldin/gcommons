@@ -7,8 +7,8 @@ apply from:   'file:groovydoc.gradle'
 
 
 ext.codenarcRuleSetFiles = [ 'codenarc.groovy' ]
-apply from: 'http://dl.bintray.com/content/evgenyg/GradleScripts/CodeNarc.gradle'
-apply from: 'http://dl.bintray.com/content/evgenyg/GradleScripts/wrapper.gradle'
+apply from: 'http://evgenyg.artifactoryonline.com/evgenyg/libs-releases-local/CodeNarc.gradle'
+apply from: 'http://evgenyg.artifactoryonline.com/evgenyg/libs-releases-local/wrapper.gradle'
 
 defaultTasks 'duplicates', 'clean', 'codenarc', 'build', 'install'
 
