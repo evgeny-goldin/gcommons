@@ -16,14 +16,14 @@ defaultTasks 'duplicates', 'clean', 'codenarc', 'build', 'install'
 sourceCompatibility          = 1.6
 group                        = 'com.github.goldin'
 
-final groovyVersion          = '2.1.1'          // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.codehaus.groovy%22%20AND%20a%3A%22groovy%22
+final groovyVersion          = '2.1.3'          // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.codehaus.groovy%22%20AND%20a%3A%22groovy%22
 final spockVersion           = '0.7-groovy-2.0' // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.spockframework%22%20AND%20a%3A%22spock-core%22
 final spockExtensionsVersion = '0.1.4'          // http://evgenyg.artifactoryonline.com/evgenyg/repo/com/github/goldin/spock-extensions/
-final gcontractsVersion      = '1.2.10'         // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.gcontracts%22%20AND%20a%3A%22gcontracts-core%22
-final antVersion             = '1.8.4'          // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.apache.ant%22%20AND%20a%3A%22ant%22
-final springVersion          = '3.2.1.RELEASE'  // http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.springframework%22%20AND%20a%3A%22spring-core%22
+final gcontractsVersion      = '1.2.12'         // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.gcontracts%22%20AND%20a%3A%22gcontracts-core%22
+final antVersion             = '1.9.0'          // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.apache.ant%22%20AND%20a%3A%22ant%22
+final springVersion          = '3.2.2.RELEASE'  // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.springframework%22%20AND%20a%3A%22spring-core%22
 final truezipVersion         = '6.8.4'          // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22de.schlichtherle%22%20AND%20a%3A%22truezip%22
-final slf4jVersion           = '1.7.2'          // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.slf4j%22%20AND%20a%3A%22slf4j-api%22
+final slf4jVersion           = '1.7.5'          // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.slf4j%22%20AND%20a%3A%22slf4j-api%22
 final junitVersion           = '4.11'           // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22junit%22%20AND%20a%3A%22junit%22
 final guiceVersion           = '3.0'            // http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.google.inject%22%20AND%20a%3A%22guice%22
 
@@ -33,16 +33,17 @@ buildscript {
         maven { url 'http://jcenter.bintray.com' }
         maven { url 'http://dl.bintray.com/content/evgenyg/BuildTools' }
     }
-    dependencies { classpath   'com.github.goldin.plugins.gradle:about:0.2.1',
-                               'com.github.goldin.plugins.gradle:duplicates:0.2.1' }
+    dependencies { classpath   'com.github.goldin.plugins.gradle:about:0.2.6',
+                               'com.github.goldin.plugins.gradle:duplicates:0.2.6' }
 }
 
 final extraJars = ( ! project.hasProperty( 'nef' /* no extra files */ ))
 
-repositories { 
+repositories {
     maven { url 'http://jcenter.bintray.com' }
     maven { url 'http://evgenyg.artifactoryonline.com/evgenyg/repo/' }
 }
+
 about        { includeDependencies = [ 'compile', 'runtime' ] }
 duplicates   { configurations      = [ 'runtime' ]
                verbose             = true }

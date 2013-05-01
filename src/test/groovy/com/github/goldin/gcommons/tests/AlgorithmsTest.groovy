@@ -100,22 +100,22 @@ class AlgorithmsTest extends BaseTest
 
     @SuppressWarnings( 'JUnitTestMethodWithoutAssert' )
     @Test
-    void selectionSort () { applySort( SortOption.Selection ) }
+    void selectionSort () { applySort( SortOption.SELECTION ) }
 
 
     @SuppressWarnings( 'JUnitTestMethodWithoutAssert' )
     @Test
-    void insertionSort () { applySort( SortOption.Insertion ) }
+    void insertionSort () { applySort( SortOption.INSERTION ) }
 
 
     @SuppressWarnings( 'JUnitTestMethodWithoutAssert' )
     @Test
-    void mergeSort () { applySort( SortOption.Merge ) }
+    void mergeSort () { applySort( SortOption.MERGE ) }
 
 
     @SuppressWarnings( 'JUnitTestMethodWithoutAssert' )
     @Test
-    void quickSort () { applySort( SortOption.Quick ) }
+    void quickSort () { applySort( SortOption.QUICK ) }
 
 
     @Test

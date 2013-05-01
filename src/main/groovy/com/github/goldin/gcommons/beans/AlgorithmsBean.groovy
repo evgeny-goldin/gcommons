@@ -92,12 +92,12 @@ class AlgorithmsBean extends BaseBean
      * @param validate whether result should be validated to be sorted
      * @return         original data provided sorted
     */
-    int[] sort ( int[] data, SortOption option = SortOption.Merge, boolean validate = true )
+    int[] sort ( int[] data, SortOption option = SortOption.MERGE, boolean validate = true )
     {
-        int[] sortedData = ( int[] )( option == SortOption.Selection ) ? selectionSort( data ) :
-                                    ( option == SortOption.Insertion ) ? insertionSort( data ) :
-                                    ( option == SortOption.Merge     ) ? mergeSort    ( data ) :
-                                    ( option == SortOption.Quick     ) ? quickSort    ( data ) :
+        int[] sortedData = ( int[] )( option == SortOption.SELECTION ) ? selectionSort( data ) :
+                                    ( option == SortOption.INSERTION ) ? insertionSort( data ) :
+                                    ( option == SortOption.MERGE     ) ? mergeSort    ( data ) :
+                                    ( option == SortOption.QUICK     ) ? quickSort    ( data ) :
                                                                          null
         assert ( sortedData != null ), "Unknown sorting option [$option], should be one of [${ SortOption.values() }]"
 
@@ -358,25 +358,25 @@ class AlgorithmsBean extends BaseBean
 /**
  * Strategy for executing the sort()
  */
-public enum SortOption
+enum SortOption
 {
    /**
     * http://en.wikipedia.org/wiki/Selection_sort
     */
-    Selection,
+    SELECTION ,
 
    /**
     * http://en.wikipedia.org/wiki/Insert_sort
     */
-    Insertion,
+   INSERTION ,
 
     /**
      * http://en.wikipedia.org/wiki/Merge_sort
      */
-    Merge,
+    MERGE ,
 
    /**
     * http://en.wikipedia.org/wiki/Quicksort
     */
-    Quick,
+   QUICK ,
 }
