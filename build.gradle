@@ -33,8 +33,8 @@ buildscript {
         maven { url 'http://jcenter.bintray.com' }
         maven { url 'http://dl.bintray.com/content/evgenyg/BuildTools' }
     }
-    dependencies { classpath   'com.github.goldin.plugins.gradle:about:0.2.6',
-                               'com.github.goldin.plugins.gradle:duplicates:0.2.6' }
+    dependencies { classpath   'com.github.goldin.plugins.gradle:about:0.2.8',
+                               'com.github.goldin.plugins.gradle:duplicates:0.2.8' }
 }
 
 final extraJars = ( ! project.hasProperty( 'nef' /* no extra files */ ))
